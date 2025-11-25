@@ -12,7 +12,7 @@ export function Navbar() {
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         <div className="flex items-center">
-          <Link href="" className="font-bold text-xl">
+          <Link href="/" className="font-bold text-xl">
             <Image
               src="/noBgColor.svg"
               width={200}
@@ -28,7 +28,12 @@ export function Navbar() {
           </Button>
 
           <Button variant="outline" asChild>
-            <Link href="/auth/register/customer">Sign Up</Link>
+            <Link
+              href="/auth/register/customer"
+              onClick={() => setIsOpen(false)}
+            >
+              Sign Up
+            </Link>
           </Button>
 
           <Button asChild className="justify-start">
