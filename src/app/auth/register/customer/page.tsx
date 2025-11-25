@@ -22,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { InputGroup } from "@/components/ui/input-group";
 import Image from "next/image";
+import Link from "next/link";
 
 const formSchema = z.object({
   name: z
@@ -142,9 +143,7 @@ export default function Login() {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="form-rhf-demo-name">
-                      Phone{" "}
-                    </FieldLabel>
+                    <FieldLabel htmlFor="form-rhf-demo-name">Phone </FieldLabel>
                     <Input
                       {...field}
                       id="form-rhf-demo-name"
@@ -167,6 +166,9 @@ export default function Login() {
               Sign Up
             </Button>
           </Field>
+          <p>
+            Already have an account? <Link href="/auth/login"> Login</Link>
+          </p>
         </CardFooter>
       </Card>
     </div>
