@@ -44,7 +44,7 @@ const formSchema = z.object({
     ),
 });
 
-export default function UserNewEditView() {
+export default function Login() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,7 +59,6 @@ export default function UserNewEditView() {
   }
 
   return (
-    <dialog>
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-full sm:max-w-md">
           <CardHeader>
@@ -150,6 +149,5 @@ export default function UserNewEditView() {
           </CardFooter>
         </Card>
       </div>
-    </dialog>
   );
 }
