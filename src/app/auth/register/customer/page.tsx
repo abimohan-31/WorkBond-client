@@ -23,6 +23,8 @@ import { Input } from "@/components/ui/input";
 import { InputGroup } from "@/components/ui/input-group";
 import Image from "next/image";
 import Link from "next/link";
+import { SignUpCustomer } from "@/services/CustomerSignUp";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   name: z
@@ -51,18 +53,49 @@ const formSchema = z.object({
     ),
 });
 
-export default function Login() {
+export default function SignUp() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = React.useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       email: "",
       password: "",
+      phone: "",
     },
   });
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    toast.success("You Registered successfully");
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+
+    try {
+      console.log("Submitting form data:", data);
+
+      const res = await SignUpCustomer(data);
+      console.log("API Response:", res);
+
+      if (res.success && res.statusCode === 201) {
+        toast.success("You registered successfully! Please login to continue.");
+
+        // Redirect to login page after 1.5 seconds
+        setTimeout(() => {
+          router.push("/auth/login");
+        }, 1500);
+      } else {
+        toast.error(res.message || "Registration failed");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong during registration"
+      );
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
