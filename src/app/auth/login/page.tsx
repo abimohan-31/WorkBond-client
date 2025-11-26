@@ -23,6 +23,8 @@ import { Input } from "@/components/ui/input";
 import { InputGroup } from "@/components/ui/input-group";
 import Image from "next/image";
 import Link from "next/link";
+import { loginUser } from "@/services/loginpage";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   role: z.enum(["admin", "customer", "provider"], {
@@ -46,6 +48,8 @@ const formSchema = z.object({
 });
 
 export default function Login() {
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -55,8 +59,28 @@ export default function Login() {
     },
   });
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    toast.success("You login successfully");
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    try {
+      const res = await loginUser(data);
+
+      if (res.message === "Login successful") {
+        toast.success("Login Successful!");
+
+        // redirect based on role
+        if (res.data.user.role === "admin") {
+          router.push("/admin/dashboard");
+        } else if (res.data.user.role === "provider") {
+          router.push("/provider/dashboard");
+        } else {
+          router.push("/customer/dashboard");
+        }
+      } else {
+        toast.error(res.message || "Login failed");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("Something went wrong");
+    }
   }
 
   return (
