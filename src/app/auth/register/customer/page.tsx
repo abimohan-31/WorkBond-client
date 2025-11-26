@@ -118,7 +118,7 @@ export default function SignUp() {
                       {...field}
                       id="form-rhf-demo-name"
                       aria-invalid={fieldState.invalid}
-                      placeholder="Enter your Name"
+                      placeholder="Work Bond"
                       autoComplete="off"
                     />
                     {fieldState.invalid && (
@@ -137,7 +137,7 @@ export default function SignUp() {
                       <Input
                         {...field}
                         id="form-rhf-demo-email"
-                        placeholder="Enter your email"
+                        placeholder="workbond@gmail.com"
                         // rows={6}
                         className="min-h-2 resize-none"
                         aria-invalid={fieldState.invalid}
@@ -162,7 +162,7 @@ export default function SignUp() {
                       {...field}
                       id="form-rhf-demo-name"
                       aria-invalid={fieldState.invalid}
-                      placeholder="Enter your Password"
+                      placeholder="WorkBond@123"
                       autoComplete="off"
                     />
                     {fieldState.invalid && (
@@ -181,7 +181,7 @@ export default function SignUp() {
                       {...field}
                       id="form-rhf-demo-name"
                       aria-invalid={fieldState.invalid}
-                      placeholder="Enter your Phone Number"
+                      placeholder="077#######"
                       autoComplete="off"
                     />
                     {fieldState.invalid && (

@@ -101,7 +101,6 @@ export default function Login() {
                     <FieldLabel>Role</FieldLabel>
 
                     <select {...field} className="border rounded-md p-2 w-full">
-                      <option value="">Choose your role</option>
                       <option value="admin">Admin</option>
                       <option value="customer">Customer</option>
                       <option value="provider">Provider</option>

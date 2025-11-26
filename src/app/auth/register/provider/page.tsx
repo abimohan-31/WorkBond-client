@@ -93,7 +93,9 @@ export default function Register() {
       console.log("API Response:", res);
 
       if (res.success && res.statusCode === 201) {
-        toast.success("You registered successfully! Please login to continue.");
+        toast.success(
+          "You registered successfully! Please wait for the admin approval."
+        );
 
         // Redirect to login page after 1.5 seconds
         setTimeout(() => {
@@ -243,7 +245,9 @@ export default function Register() {
                       aria-invalid={fieldState.invalid}
                       placeholder="Enter your experience in years"
                       autoComplete="off"
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                      onChange={(e) =>
+                        field.onChange(parseInt(e.target.value) || 1)
+                      }
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -273,6 +277,7 @@ export default function Register() {
                             "Cleaning",
                             "Electrician",
                             "Carpentry",
+                            "Gardening",
                           ].map((skill) => (
                             <DropdownMenuCheckboxItem
                               key={skill}
