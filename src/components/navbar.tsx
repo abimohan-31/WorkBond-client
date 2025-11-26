@@ -24,7 +24,7 @@ export function Navbar() {
 
         <div className="flex items-center space-x-4">
           <Button variant="ghost" asChild>
-            <Link href="/become-provider">Join as a Provider</Link>
+            <Link href="/auth/register/provider">Join as a Provider</Link>
           </Button>
 
           <Button variant="outline" asChild>
