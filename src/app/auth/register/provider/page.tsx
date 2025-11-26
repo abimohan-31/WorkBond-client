@@ -29,6 +29,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SignUpProvider } from "@/services/ProviderSignUp";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   name: z
@@ -55,18 +57,19 @@ const formSchema = z.object({
       /^(\+94\s?|0)?7[0-9]{1}[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}$/,
       "Please enter a valid phone number (e.g., 077 123 4567 or +94 77 123 4567)"
     ),
-  address: z.string({
+  address: z.string().min(1, {
     message: "Address is required",
   }),
-  experience_year: z
-    .number({
-      message: "Experience year is required",
-    })
-    .min(1, "Atleast 1 year experience needed"),
+  experience_years: z.number({
+    message: "Experience years is required",
+  }),
   skills: z.array(z.string()).min(1, "Add at least one skill"),
 });
 
-export default function Login() {
+export default function Register() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = React.useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -75,13 +78,40 @@ export default function Login() {
       password: "",
       phone: "",
       address: "",
-      experience_year: 1,
+      experience_years: 1,
       skills: [],
     },
   });
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    toast.success("You Registered successfully");
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+
+    try {
+      console.log("Submitting form data:", data);
+
+      const res = await SignUpProvider(data);
+      console.log("API Response:", res);
+
+      if (res.success && res.statusCode === 201) {
+        toast.success("You registered successfully! Please login to continue.");
+
+        // Redirect to login page after 1.5 seconds
+        setTimeout(() => {
+          router.push("/auth/login");
+        }, 1500);
+      } else {
+        toast.error(res.message || "Registration failed");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong during registration"
+      );
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -198,19 +228,22 @@ export default function Login() {
                 )}
               />
               <Controller
-                name="experience_year"
+                name="experience_years"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="form-rhf-demo-name">
-                      Experience year{" "}
+                    <FieldLabel htmlFor="form-rhf-demo-experience">
+                      Experience Years{" "}
                     </FieldLabel>
                     <Input
                       {...field}
-                      id="form-rhf-demo-name"
+                      id="form-rhf-demo-experience"
+                      type="number"
+                      min="1"
                       aria-invalid={fieldState.invalid}
-                      placeholder="Enter your experience here"
+                      placeholder="Enter your experience in years"
                       autoComplete="off"
+                      onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
