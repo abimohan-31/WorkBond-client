@@ -5,9 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { LoginModal } from "@/components/auth/LoginModal";
-import { RegisterCustomerModal } from "@/components/auth/RegisterCustomerModal";
-import { RegisterProviderModal } from "@/components/auth/RegisterProviderModal";
+import { LoginModal } from "@/app/auth/LoginModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +22,7 @@ export function Navbar() {
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-      <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+      <div className="container mx-10 px-4 h-20 flex items-center justify-between">
         <div className="flex items-center">
           <Link href="/" className="font-bold text-xl">
             <Image
@@ -39,13 +37,13 @@ export function Navbar() {
         <div className="flex items-center space-x-4">
           {!user ? (
             <>
-              <RegisterProviderModal>
+              <Link href="/auth/register/provider">
                 <Button variant="ghost">Join as a Provider</Button>
-              </RegisterProviderModal>
+              </Link>
 
-              <RegisterCustomerModal>
+              <Link href="/auth/register/customer">
                 <Button variant="outline">Sign Up</Button>
-              </RegisterCustomerModal>
+              </Link>
 
               <LoginModal>
                 <Button>Log In</Button>
@@ -54,7 +52,10 @@ export function Navbar() {
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative h-8 w-8 rounded-full"
+                >
                   <Avatar className="h-8 w-8">
                     <AvatarImage src="/avatars/01.png" alt={user.name} />
                     <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
