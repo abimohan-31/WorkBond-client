@@ -1,6 +1,6 @@
 // API Configuration
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://workbond-api.vercel.app";
+  process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Types
 export interface Provider {
@@ -58,7 +58,7 @@ export const adminApi = {
     page = 1,
     limit = 10
   ): Promise<ApiResponse<{ providers: Provider[] }>> {
-    const response = await fetch(`${API_URL}/api/admins/providers/pending`, {
+    const response = await fetch(`${API_URL}/admins/providers/pending`, {
       headers: getAuthHeaders(token),
     });
 
@@ -77,7 +77,7 @@ export const adminApi = {
   async getAllProviders(
     token: string
   ): Promise<ApiResponse<{ providers: Provider[] }>> {
-    const response = await fetch(`${API_URL}/api/admins/providers`, {
+    const response = await fetch(`${API_URL}/admins/providers`, {
       headers: getAuthHeaders(token),
     });
 
@@ -94,7 +94,7 @@ export const adminApi = {
   async getAllCustomers(
     token: string
   ): Promise<ApiResponse<{ customers: Customer[] }>> {
-    const response = await fetch(`${API_URL}/api/admins/customers`, {
+    const response = await fetch(`${API_URL}/admins/customers`, {
       headers: getAuthHeaders(token),
     });
 
@@ -112,10 +112,12 @@ export const adminApi = {
     token: string,
     providerId: string
   ): Promise<ApiResponse<{ provider: Provider }>> {
+    const url = `${API_URL}/admins/providers/${providerId}/approve`;
+    console.log("Approving provider at:", url);
     const response = await fetch(
-      `${API_URL}/api/admins/providers/${providerId}/approve`,
+      url,
       {
-        method: "PUT",
+        method: "PATCH",
         headers: getAuthHeaders(token),
       }
     );
@@ -137,9 +139,9 @@ export const adminApi = {
     reason?: string
   ): Promise<ApiResponse<{ provider: Provider }>> {
     const response = await fetch(
-      `${API_URL}/api/admins/providers/${providerId}/reject`,
+      `${API_URL}/admins/providers/${providerId}/reject`,
       {
-        method: "PUT",
+        method: "PATCH",
         headers: getAuthHeaders(token),
         body: JSON.stringify({ reason }),
       }
@@ -161,7 +163,7 @@ export const adminApi = {
     providerId: string
   ): Promise<ApiResponse<void>> {
     const response = await fetch(
-      `${API_URL}/api/admins/providers/${providerId}`,
+      `${API_URL}/admins/providers/${providerId}`,
       {
         method: "DELETE",
         headers: getAuthHeaders(token),
