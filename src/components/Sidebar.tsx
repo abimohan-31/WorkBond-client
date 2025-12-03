@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { usePermissions } from "@/hooks/usePermissions";
 import {
   LayoutDashboard,
   User,
@@ -12,6 +13,10 @@ import {
   Calendar,
   Users,
   CheckSquare,
+  FileText,
+  CreditCard,
+  DollarSign,
+  Star,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -20,32 +25,117 @@ interface SidebarProps {
 
 export function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
+  const permissions = usePermissions();
 
-  const adminLinks = [
-    { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/admin/providers", label: "Providers", icon: Briefcase },
-    { href: "/admin/customers", label: "Customers", icon: Users },
-    { href: "/admin/settings", label: "Settings", icon: Settings },
+  // Define all possible menu items with their required permission
+  const menuItems = [
+    // Admin Items
+    {
+      label: "Dashboard",
+      href: "/admin/dashboard",
+      icon: LayoutDashboard,
+      show: permissions.isAdmin,
+    },
+    {
+      label: "Providers",
+      href: "/admin/providers",
+      icon: Briefcase,
+      show: permissions.canManageProviders,
+    },
+    {
+      label: "Customers",
+      href: "/admin/customers",
+      icon: Users,
+      show: permissions.canManageCustomers,
+    },
+    {
+      label: "Services",
+      href: "/admin/services",
+      icon: CheckSquare,
+      show: permissions.canManageServices,
+    },
+    {
+      label: "Subscriptions",
+      href: "/admin/subscriptions",
+      icon: CreditCard,
+      show: permissions.canManageSubscriptions,
+    },
+    {
+      label: "Price Lists",
+      href: "/admin/pricelists",
+      icon: DollarSign,
+      show: permissions.canManagePriceLists,
+    },
+    
+    // Customer Items
+    {
+      label: "Dashboard",
+      href: "/customer/dashboard",
+      icon: LayoutDashboard,
+      show: permissions.isCustomer,
+    },
+    {
+      label: "My Job Posts",
+      href: "/customer/job-posts",
+      icon: Calendar,
+      show: permissions.canViewOwnJobPosts,
+    },
+    {
+      label: "Reviews",
+      href: "/customer/reviews",
+      icon: Star,
+      show: permissions.isCustomer, // Customers can create reviews
+    },
+
+    // Provider Items
+    {
+      label: "Dashboard",
+      href: "/provider/dashboard",
+      icon: LayoutDashboard,
+      show: permissions.isProvider,
+    },
+    {
+      label: "Job Opportunities",
+      href: "/provider/job-posts",
+      icon: Briefcase,
+      show: permissions.canApplyJobPost,
+    },
+    {
+      label: "My Reviews",
+      href: "/provider/reviews",
+      icon: Star,
+      show: permissions.isProvider, // Providers view their reviews
+    },
+    {
+      label: "Subscriptions",
+      href: "/provider/subscriptions",
+      icon: CreditCard,
+      show: permissions.isProvider, // Providers view subscriptions
+    },
+    {
+      label: "Price List",
+      href: "/pricelists", // Public page but relevant for provider
+      icon: DollarSign,
+      show: permissions.isProvider,
+    },
+
+    // Shared / Common
+    {
+      label: "Profile",
+      href: `/${role}/profile`,
+      icon: User,
+      show: true, // Everyone has a profile
+    },
+    {
+      label: "Settings",
+      href: "/admin/settings", // Only admin has settings page for now
+      icon: Settings,
+      show: permissions.isAdmin,
+    },
   ];
 
-  const providerLinks = [
-    { href: "/provider/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/provider/jobs", label: "My Jobs", icon: Briefcase },
-    { href: "/provider/profile", label: "Profile", icon: User },
-  ];
-
-  const customerLinks = [
-    { href: "/customer/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/customer/job-posts", label: "Job Posts", icon: Calendar },
-    { href: "/customer/profile", label: "Profile", icon: User },
-  ];
-
-  const links =
-    role === "admin"
-      ? adminLinks
-      : role === "provider"
-      ? providerLinks
-      : customerLinks;
+  // Filter items based on permissions
+  const visibleItems = menuItems.filter((item) => item.show);
 
   return (
     <div className="pb-12 min-h-screen w-64 border-r bg-background hidden md:block">
@@ -55,11 +145,14 @@ export function Sidebar({ role }: SidebarProps) {
             {role.charAt(0).toUpperCase() + role.slice(1)} Portal
           </h2>
           <div className="space-y-1">
-            {links.map((link) => (
+            {visibleItems.map((link) => (
               <Button
                 key={link.href}
                 variant={pathname === link.href ? "secondary" : "ghost"}
-                className="w-full justify-start"
+                className={cn(
+                  "w-full justify-start",
+                  pathname === link.href && "bg-secondary"
+                )}
                 asChild
               >
                 <Link href={link.href}>

@@ -75,7 +75,7 @@ export function Navbar() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href={`/${user.role}`}>Dashboard</Link>
+                  <Link href={`/${user.role}/dashboard`}>Dashboard</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href={`/${user.role}/profile`}>Profile</Link>
