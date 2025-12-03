@@ -27,7 +27,7 @@ const registerProviderSchema = z.object({
   address: z.string().min(5, "Address is required"),
   experience_years: z
     .string()
-    .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+    .refine((val) => !isNaN(Number(val)) && Number(val) >= 1, {
       message: "Experience must be a positive number",
     }),
   skills: z.string().min(2, "At least one skill is required"),
@@ -45,7 +45,7 @@ export default function RegisterProviderPage() {
       password: "",
       phone: "",
       address: "",
-      experience_years: "0",
+      experience_years: "",
       skills: "",
     },
   });
@@ -201,7 +201,7 @@ export default function RegisterProviderPage() {
 
         <div className="text-center text-sm">
           Already have an account?{" "}
-          <Link href="/" className="underline hover:text-primary">
+          <Link href="/auth" className="underline hover:text-primary">
             Log in
           </Link>
         </div>
