@@ -92,7 +92,7 @@ export default function Home() {
         } else if (pl.price_type === "per_unit") {
           return `LKR${pl.unit_price}/${pl.unit}`;
         } else if (pl.price_type === "range") {
-          return `LKR${pl.min_price} - ${pl.max_price}`;
+          return `LKR${pl.min_price} - LKR${pl.max_price}`;
         }
         return "";
       })
@@ -139,7 +139,7 @@ export default function Home() {
     if (pl.price_type === "fixed") return `LKR${pl.fixed_price} fixed`;
     if (pl.price_type === "per_unit") return `LKR${pl.unit_price}/${pl.unit}`;
     if (pl.price_type === "range")
-      return `LKR${pl.min_price} - ${pl.max_price}`;
+      return `LKR${pl.min_price} - LKR${pl.max_price}`;
     return "Price not available";
   };
 
