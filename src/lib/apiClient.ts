@@ -8,28 +8,16 @@ const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // Send cookies with all requests
 });
 
-apiClient.interceptors.request.use((config) => {
-  // Ensure we are in the browser before accessing localStorage
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
+// Response interceptor for handling errors
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
-        localStorage.removeItem("token");
         localStorage.removeItem("user");
-        // Optional: Redirect to login if not already there
-        // window.location.href = "/"; 
         toast.error("Session expired. Please login again.");
       }
     }
@@ -88,8 +76,20 @@ export const admin = {
   getPendingProviders: () => apiClient.get("/admins/providers/pending"),
   approveProvider: (id: string) => apiClient.patch(`/admins/providers/${id}/approve`),
   rejectProvider: (id: string) => apiClient.patch(`/admins/providers/${id}/reject`),
+  deleteProvider: (id: string) => apiClient.delete(`/admins/providers/${id}`),
   getAllProviders: () => apiClient.get("/admins/providers"),
+  updateProviderStatus: (id: string, isActive: boolean) => apiClient.patch(`/admins/providers/${id}`, { isActive }),
   getAllCustomers: () => apiClient.get("/admins/customers"),
+  getAllSubscriptions: () => apiClient.get("/admins/subscriptions"),
+  getAllReviews: () => apiClient.get("/admins/reviews"),
+  deleteReview: (id: string) => apiClient.delete(`/admins/reviews/${id}`),
+};
+
+export const providers = {
+  getProfile: () => apiClient.get("/providers/profile"),
+  updateProfile: (data: any) => apiClient.put("/providers/profile", data),
+  getReviews: () => apiClient.get("/providers/reviews"),
+  getSubscription: () => apiClient.get("/providers/subscription"),
 };
 
 export default apiClient;
