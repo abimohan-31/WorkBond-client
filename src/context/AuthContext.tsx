@@ -9,6 +9,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Cookies from "js-cookie";
 
 interface User {
   _id: string;
@@ -40,11 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const checkAuth = async () => {
-    const storedToken = localStorage.getItem("token");
+    const cookieToken = Cookies.get("access_token");
     const storedUser = localStorage.getItem("user");
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
+    if (cookieToken && storedUser) {
+      setToken(cookieToken);
       setUser(JSON.parse(storedUser));
     }
     setIsLoading(false);
@@ -53,7 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (newToken: string, userData: User) => {
     setToken(newToken);
     setUser(userData);
-    localStorage.setItem("token", newToken);
+    // Token is stored in HTTP-only cookie by backend
+    // Only store user data in localStorage for quick access (non-sensitive)
     localStorage.setItem("user", JSON.stringify(userData));
 
     toast.success("Logged in successfully");
@@ -75,7 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem("token");
+    // Clear the HTTP-only cookie
+    Cookies.remove("access_token");
     localStorage.removeItem("user");
     toast.success("Logged out successfully");
     router.push("/");
