@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     const cookieToken = Cookies.get("access_token");
-    const storedUser = localStorage.getItem("user");
+    const storedUser = Cookies.get("user");
 
     if (cookieToken && storedUser) {
       setToken(cookieToken);
@@ -55,8 +55,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(newToken);
     setUser(userData);
     // Token is stored in HTTP-only cookie by backend
-    // Only store user data in localStorage for quick access (non-sensitive)
-    localStorage.setItem("user", JSON.stringify(userData));
+    // Only store user data in Cookies for quick access (non-sensitive)
+    Cookies.set("user", JSON.stringify(userData));
 
     toast.success("Logged in successfully");
 
@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     // Clear the HTTP-only cookie
     Cookies.remove("access_token");
-    localStorage.removeItem("user");
+    Cookies.remove("user");
     toast.success("Logged out successfully");
     router.push("/");
   };
