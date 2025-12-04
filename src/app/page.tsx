@@ -50,23 +50,23 @@ export default function Home() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      console.log('Fetching data from API...');
-      console.log('API URL:', process.env.NEXT_PUBLIC_API_URL);
-      
+      console.log("Fetching data from API...");
+      console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
+
       const [servicesRes, priceListsRes] = await Promise.all([
         servicesApi.getAll(),
         priceListsApi.getAll(),
       ]);
 
-      console.log('Services response:', servicesRes.data);
-      console.log('Price lists response:', priceListsRes.data);
+      console.log("Services response:", servicesRes.data);
+      console.log("Price lists response:", priceListsRes.data);
 
       // Both endpoints return data array directly in data property
       setServices(servicesRes.data.data || []);
       setPriceLists(priceListsRes.data.data || []);
-      
-      console.log('Services loaded:', servicesRes.data.data?.length || 0);
-      console.log('Price lists loaded:', priceListsRes.data.data?.length || 0);
+
+      console.log("Services loaded:", servicesRes.data.data?.length || 0);
+      console.log("Price lists loaded:", priceListsRes.data.data?.length || 0);
     } catch (error: any) {
       console.error("Error fetching data:", error);
       console.error("Error details:", error.response?.data || error.message);
@@ -92,7 +92,7 @@ export default function Home() {
         } else if (pl.price_type === "per_unit") {
           return `LKR${pl.unit_price}/${pl.unit}`;
         } else if (pl.price_type === "range") {
-          return `LKR${pl.min_price} - $${pl.max_price}`;
+          return `LKR${pl.min_price} - ${pl.max_price}`;
         }
         return "";
       })
@@ -122,17 +122,24 @@ export default function Home() {
   });
 
   const filteredPriceLists = priceLists.filter((pl: any) => {
-    const service = services.find((s) => s._id === pl.service_id?._id || pl.service_id);
-    const serviceName = typeof pl.service_id === 'object' ? pl.service_id?.name : service?.name;
-    const matchesSearch = serviceName?.toLowerCase().includes(priceListSearch.toLowerCase()) || false;
-    const matchesPriceType = priceTypeFilter === "all" || pl.price_type === priceTypeFilter;
+    const service = services.find(
+      (s) => s._id === pl.service_id?._id || pl.service_id
+    );
+    const serviceName =
+      typeof pl.service_id === "object" ? pl.service_id?.name : service?.name;
+    const matchesSearch =
+      serviceName?.toLowerCase().includes(priceListSearch.toLowerCase()) ||
+      false;
+    const matchesPriceType =
+      priceTypeFilter === "all" || pl.price_type === priceTypeFilter;
     return matchesSearch && matchesPriceType && pl.isActive;
   });
 
   const formatPriceListPrice = (pl: any) => {
     if (pl.price_type === "fixed") return `LKR${pl.fixed_price} fixed`;
     if (pl.price_type === "per_unit") return `LKR${pl.unit_price}/${pl.unit}`;
-    if (pl.price_type === "range") return `LKR${pl.min_price} - $${pl.max_price}`;
+    if (pl.price_type === "range")
+      return `LKR${pl.min_price} - ${pl.max_price}`;
     return "Price not available";
   };
 
@@ -256,10 +263,11 @@ export default function Home() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredPriceLists.map((priceList: any) => {
-                const service = typeof priceList.service_id === 'object' 
-                  ? priceList.service_id 
-                  : services.find((s) => s._id === priceList.service_id);
-                
+                const service =
+                  typeof priceList.service_id === "object"
+                    ? priceList.service_id
+                    : services.find((s) => s._id === priceList.service_id);
+
                 return (
                   <Card
                     key={priceList._id}
@@ -271,14 +279,16 @@ export default function Home() {
                           {service?.name || "Service"}
                         </span>
                         <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                          {priceList.price_type.replace('_', ' ')}
+                          {priceList.price_type.replace("_", " ")}
                         </span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="mb-4">
                         <p className="text-sm text-gray-500 mb-1">Category</p>
-                        <p className="text-sm font-medium">{service?.category || "N/A"}</p>
+                        <p className="text-sm font-medium">
+                          {service?.category || "N/A"}
+                        </p>
                       </div>
                       <div className="border-t pt-4">
                         <p className="text-sm text-gray-500 mb-1">Price</p>
