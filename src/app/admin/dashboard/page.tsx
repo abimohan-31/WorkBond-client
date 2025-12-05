@@ -23,14 +23,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { adminApi, Provider, Customer } from "@/lib/api/admin";
+import { adminApi, Provider } from "@/lib/api/admin";
 import { RefreshCw } from "lucide-react";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [pendingProviders, setPendingProviders] = useState<Provider[]>([]);
-  const [allProviders, setAllProviders] = useState<Provider[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [openDialogs, setOpenDialogs] = useState<{ [key: string]: boolean }>({});
@@ -42,15 +40,9 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const [pendingRes, providersRes, customersRes] = await Promise.all([
-        adminApi.getPendingProviders(),
-        adminApi.getAllProviders(),
-        adminApi.getAllCustomers(),
-      ]);
-
+      // Only fetch pending providers for dashboard - customers and providers should be loaded on their dedicated pages
+      const pendingRes = await adminApi.getPendingProviders();
       setPendingProviders(pendingRes.data?.providers || []);
-      setAllProviders(providersRes.data?.providers || []);
-      setCustomers(customersRes.data?.customers || []);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
       toast.error(
@@ -119,7 +111,7 @@ export default function AdminDashboard() {
           </Button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
+        <div className="grid gap-4 md:grid-cols-1 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -130,33 +122,11 @@ export default function AdminDashboard() {
               <div className="text-2xl font-bold">{pendingProviders.length}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Providers
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{allProviders.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Customers
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{customers.length}</div>
-            </CardContent>
-          </Card>
         </div>
 
         <Tabs defaultValue="pending" className="space-y-4">
           <TabsList>
             <TabsTrigger value="pending">Pending Providers</TabsTrigger>
-            <TabsTrigger value="providers">All Providers</TabsTrigger>
-            <TabsTrigger value="customers">Customers</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending" className="space-y-4">
@@ -283,97 +253,6 @@ export default function AdminDashboard() {
                         <TableRow>
                           <TableCell colSpan={7} className="text-center">
                             No pending providers
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="providers">
-            <Card>
-              <CardHeader>
-                <CardTitle>All Providers</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="text-center py-8">Loading...</div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Availability</TableHead>
-                        <TableHead>Rating</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {allProviders.map((provider) => (
-                        <TableRow key={provider._id}>
-                          <TableCell>{provider.name}</TableCell>
-                          <TableCell>{provider.email}</TableCell>
-                          <TableCell>{provider.phone}</TableCell>
-                          <TableCell>
-                            {provider.isApproved ? "Approved" : "Pending"}
-                          </TableCell><TableCell>
-                            {provider.availability_status ? "Available" : "Unavailable"}
-                          </TableCell>
-                          <TableCell>{provider.rating.toFixed(1)}</TableCell>
-                        </TableRow>
-                      ))}
-                      {allProviders.length === 0 && (
-                        <TableRow>
-                          <TableCell colSpan={5} className="text-center">
-                            No providers found
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="customers">
-            <Card>
-              <CardHeader>
-                <CardTitle>All Customers</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="text-center py-8">Loading...</div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Joined</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {customers.map((customer) => (
-                        <TableRow key={customer._id}>
-                          <TableCell>{customer.name}</TableCell>
-                          <TableCell>{customer.email}</TableCell>
-                          <TableCell>{customer.phone || "N/A"}</TableCell>
-                          <TableCell>
-                            {new Date(customer.createdAt).toLocaleDateString()}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {customers.length === 0 && (
-                        <TableRow>
-                          <TableCell colSpan={4} className="text-center">
-                            No customers found
                           </TableCell>
                         </TableRow>
                       )}
