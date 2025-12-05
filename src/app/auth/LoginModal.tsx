@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
+import { auth } from "@/lib/api/auth";
+
 const loginSchema = z.object({
   email: z
     .string()
@@ -65,20 +67,10 @@ export function LoginModal({
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
-      const response = await fetch(
-        "https://workbond-api.vercel.app/api/users/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
+      const response = await auth.login(data);
+      const result = response.data;
 
-      const result = await response.json();
-
-      if (!response.ok) {
+      if (!result.success) {
         throw new Error(result.message || "Login failed");
       }
 
@@ -86,7 +78,7 @@ export function LoginModal({
       setOpen(false);
       if (onOpenChange) onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || error.message || "Login failed");
     }
   };
 
