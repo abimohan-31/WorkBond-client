@@ -21,26 +21,28 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { auth } from "@/lib/api/auth";
 
-const registerCustomerSchema = z.object({
-  name: z
-    .string()
-    .min(1, "name is required")
-    .refine((val) => val.trim().length >= 3, {
-      message: "name must be at least 3 letters",
-    }),
-  email: z
-    .string()
-    .min(1, "email is required")
-    .refine((val) => val.includes("@"), {
-      message: "invalid email address",
-    }),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  confirmPassword: z.string(),
-  phone: z.string().optional(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+const registerCustomerSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, "name is required")
+      .refine((val) => val.trim().length >= 3, {
+        message: "name must be at least 3 letters",
+      }),
+    email: z
+      .string()
+      .min(1, "email is required")
+      .refine((val) => val.includes("@"), {
+        message: "invalid email address",
+      }),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+    phone: z.string().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 type RegisterCustomerFormValues = z.infer<typeof registerCustomerSchema>;
 
@@ -63,15 +65,58 @@ export default function RegisterCustomerPage() {
 
   const onSubmit = async (data: RegisterCustomerFormValues) => {
     try {
-      const response = await auth.register({ ...data, role: "customer" });
+      // Remove confirmPassword before sending to backend
+      const { confirmPassword, ...registerData } = data;
+
+      const response = await auth.register({
+        ...registerData,
+        role: "customer",
+      });
       const result = response.data;
 
-      // Login with token and user data
-      login(result.data.token, result.data.user);
-      toast.success("Account created successfully!");
-      router.push("/");
+      // Check if registration was successful
+      if (!result.success) {
+        throw new Error(result.message || "Registration failed");
+      }
+
+      // Check if user data exists in response
+      if (!result.data || !result.data.user) {
+        throw new Error("Invalid response from server");
+      }
+
+      // Automatically log in the user after successful registration
+      // Backend doesn't set cookie during registration, so we need to login
+      try {
+        const loginResponse = await auth.login({
+          email: data.email,
+          password: data.password,
+          role: "customer",
+        });
+        const loginResult = loginResponse.data;
+
+        if (loginResult.success && loginResult.data?.user) {
+          // Login function only accepts userData (backend sets httpOnly cookie during login)
+          login(loginResult.data.user);
+          toast.success("Account created and logged in successfully!");
+          router.push("/customer/dashboard");
+        } else {
+          // Registration successful but auto-login failed, redirect to login
+          toast.success("Account created successfully! Please log in.");
+          router.push("/");
+        }
+      } catch (loginError: any) {
+        // Registration successful but auto-login failed, redirect to login
+        toast.success("Account created successfully! Please log in.");
+        router.push("/");
+      }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || error.message || "Registration failed");
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Registration failed";
+      toast.error(errorMessage);
+      console.error("Registration error:", error);
     }
   };
 
@@ -176,7 +221,9 @@ export default function RegisterCustomerPage() {
                         variant="ghost"
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                       >
                         {showConfirmPassword ? (
                           <EyeOff className="h-4 w-4 text-muted-foreground" />

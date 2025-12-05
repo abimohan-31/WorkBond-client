@@ -74,11 +74,24 @@ export function LoginModal({
         throw new Error(result.message || "Login failed");
       }
 
-      login(result.data.token, result.data.user);
+      // Check if user data exists in response
+      if (!result.data || !result.data.user) {
+        throw new Error("Invalid response from server");
+      }
+
+      // Login function only accepts userData (token is stored in httpOnly cookie by backend)
+      login(result.data.user);
       setOpen(false);
       if (onOpenChange) onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || error.message || "Login failed");
+      // Handle axios errors and regular errors
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Login failed. Please check your credentials.";
+      toast.error(errorMessage);
+      console.error("Login error:", error);
     }
   };
 
