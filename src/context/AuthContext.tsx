@@ -21,10 +21,9 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   isLoading: boolean;
-  login: (token: string, userData: User) => void;
-  logout: () => void;
+  login: (userData: User) => void;
+  logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
 }
 
@@ -32,7 +31,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -41,21 +39,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const checkAuth = async () => {
-    const cookieToken = Cookies.get("access_token");
+    // Check user data stored in non-sensitive cookie
     const storedUser = Cookies.get("user");
 
-    if (cookieToken && storedUser) {
-      setToken(cookieToken);
-      setUser(JSON.parse(storedUser));
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error("Failed to parse user data:", error);
+        Cookies.remove("user");
+      }
     }
     setIsLoading(false);
   };
 
-  const login = (newToken: string, userData: User) => {
-    setToken(newToken);
+  const login = (userData: User) => {
     setUser(userData);
-    // Token is stored in HTTP-only cookie by backend
-    // Only store user data in Cookies for quick access (non-sensitive)
+
+    // Store user data (non-sensitive) in cookies
     Cookies.set("user", JSON.stringify(userData));
 
     toast.success("Logged in successfully");
@@ -74,20 +75,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
-    setToken(null);
+  const logout = async () => {
+    try {
+      // Call backend to clear HttpOnly cookie
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
+      await fetch(`${API_URL}/users/logout`, {
+        method: "POST",
+        credentials: "include", // important!
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+
     setUser(null);
-    // Clear the HTTP-only cookie
-    Cookies.remove("access_token");
     Cookies.remove("user");
     toast.success("Logged out successfully");
     router.push("/");
   };
 
   return (
-    <AuthContext.Provider
-      value={{ user, token, isLoading, login, logout, checkAuth }}
-    >
+    <AuthContext.Provider value={{ user, isLoading, login, logout, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );
