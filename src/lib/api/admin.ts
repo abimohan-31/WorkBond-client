@@ -56,11 +56,18 @@ export const adminApi = {
   },
 
   /**
-   * Get all providers (approved)
+   * Get all providers (approved) - Note: API returns data as direct array, not wrapped
    */
-  async getAllProviders(): Promise<ApiResponse<{ providers: Provider[] }>> {
+  async getAllProvidersForAdmin(): Promise<ApiResponse<Provider[]>> {
     const response = await apiClient.get("/providers/admin/all");
     return response.data;
+  },
+
+  /**
+   * Alias for getAllProvidersForAdmin to match dashboard usage
+   */
+  async getAllProviders(): Promise<ApiResponse<Provider[]>> {
+    return this.getAllProvidersForAdmin();
   },
 
   /**

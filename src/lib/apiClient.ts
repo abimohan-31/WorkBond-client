@@ -1,5 +1,6 @@
 import axios from "axios";
 import { toast } from "sonner";
+import Cookies from "js-cookie";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -15,10 +16,14 @@ const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("user");
+    if (typeof window !== "undefined") {
+      if (error.response?.status === 401) {
+        Cookies.remove("user");
         toast.error("Session expired. Please login again.");
+      } else if (error.response?.status === 403) {
+        toast.error(
+          "Access forbidden. You may not have the required permissions."
+        );
       }
     }
     return Promise.reject(error);
@@ -28,6 +33,8 @@ apiClient.interceptors.response.use(
 export const services = {
   getAll: () => apiClient.get("/services"),
   getById: (id: string) => apiClient.get(`/services/${id}`),
+  getProviders: (id: string) => apiClient.get(`/services/${id}/providers`),
+  getAllWithProviders: () => apiClient.get("/services/with-providers"),
   create: (data: any) => apiClient.post("/services", data),
   update: (id: string, data: any) => apiClient.put(`/services/${id}`, data),
   delete: (id: string) => apiClient.delete(`/services/${id}`),
@@ -40,8 +47,10 @@ export const jobPosts = {
   update: (id: string, data: any) => apiClient.put(`/job-posts/${id}`, data),
   delete: (id: string) => apiClient.delete(`/job-posts/${id}`),
   apply: (id: string) => apiClient.post(`/job-posts/${id}/apply`),
-  approve: (id: string, appId: string) => apiClient.put(`/job-posts/${id}/applications/${appId}/approve`),
-  reject: (id: string, appId: string) => apiClient.put(`/job-posts/${id}/applications/${appId}/reject`),
+  approve: (id: string, appId: string) =>
+    apiClient.put(`/job-posts/${id}/applications/${appId}/approve`),
+  reject: (id: string, appId: string) =>
+    apiClient.put(`/job-posts/${id}/applications/${appId}/reject`),
 };
 
 export const reviews = {
@@ -54,7 +63,8 @@ export const reviews = {
 export const subscriptions = {
   getAll: () => apiClient.get("/subscriptions"),
   create: (data: any) => apiClient.post("/subscriptions", data),
-  update: (id: string, data: any) => apiClient.put(`/subscriptions/${id}`, data),
+  update: (id: string, data: any) =>
+    apiClient.put(`/subscriptions/${id}`, data),
   delete: (id: string) => apiClient.delete(`/subscriptions/${id}`),
 };
 
@@ -73,16 +83,17 @@ export const profiles = {
 };
 
 export const admin = {
-  getPendingProviders: () => apiClient.get("/admins/providers/pending"),
-  approveProvider: (id: string) => apiClient.patch(`/admins/providers/${id}/approve`),
-  rejectProvider: (id: string) => apiClient.patch(`/admins/providers/${id}/reject`),
-  deleteProvider: (id: string) => apiClient.delete(`/admins/providers/${id}`),
-  getAllProviders: () => apiClient.get("/admins/providers"),
-  updateProviderStatus: (id: string, isActive: boolean) => apiClient.patch(`/admins/providers/${id}`, { isActive }),
-  getAllCustomers: () => apiClient.get("/admins/customers"),
-  getAllSubscriptions: () => apiClient.get("/admins/subscriptions"),
-  getAllReviews: () => apiClient.get("/admins/reviews"),
-  deleteReview: (id: string) => apiClient.delete(`/admins/reviews/${id}`),
+  getPendingProviders: () => apiClient.get("/providers/pending"),
+  approveProvider: (id: string) => apiClient.patch(`/providers/${id}/approve`),
+  rejectProvider: (id: string) => apiClient.patch(`/providers/${id}/reject`),
+  deleteProvider: (id: string) => apiClient.delete(`/providers/${id}`),
+  getAllProvidersForAdmin: () => apiClient.get("/providers/admin/all"),
+  updateProviderStatus: (id: string, isActive: boolean) =>
+    apiClient.patch(`/providers/${id}`, { isActive }),
+  getAllCustomers: () => apiClient.get("/customers"),
+  getAllSubscriptions: () => apiClient.get("/subscriptions"),
+  getAllReviews: () => apiClient.get("/reviews"),
+  deleteReview: (id: string) => apiClient.delete(`/reviews/${id}`),
 };
 
 export const providers = {
