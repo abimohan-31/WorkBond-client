@@ -31,7 +31,9 @@ export default function AdminDashboard() {
   const [pendingProviders, setPendingProviders] = useState<Provider[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [openDialogs, setOpenDialogs] = useState<{ [key: string]: boolean }>({});
+  const [openDialogs, setOpenDialogs] = useState<{ [key: string]: boolean }>(
+    {}
+  );
 
   useEffect(() => {
     fetchData();
@@ -96,173 +98,156 @@ export default function AdminDashboard() {
 
   return (
     <>
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <Button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            variant="outline"
-            size="sm"
-          >
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
-            />
-            Refresh
-          </Button>
-        </div>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <Button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          variant="outline"
+          size="sm"
+        >
+          <RefreshCw
+            className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+          />
+          Refresh
+        </Button>
+      </div>
 
-        <div className="grid gap-4 md:grid-cols-1 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Pending Approvals
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{pendingProviders.length}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Tabs defaultValue="pending" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="pending">Pending Providers</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="pending" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Pending Provider Approvals</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="text-center py-8">Loading...</div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Experience</TableHead>
-                        <TableHead>Skills</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pendingProviders.map((provider) => (
-                        <TableRow key={provider._id}>
-                          <TableCell>{provider.name}</TableCell>
-                          <TableCell>{provider.email}</TableCell>
-                          <TableCell>{provider.phone}</TableCell>
-                          <TableCell>{provider.experience_years} years</TableCell>
-                          <TableCell>{provider.skills.join(", ")}</TableCell>
-                          <TableCell>
-                            {new Date(provider.createdAt).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell className="space-x-2">
-                            <Dialog
-                              open={openDialogs[`approve-${provider._id}`]}
-                              onOpenChange={(open) =>
+      <Card>
+        <CardHeader>
+          <CardTitle>Pending Provider Approvals</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{pendingProviders.length}</div>
+        </CardContent>
+        <CardContent>
+          {isLoading ? (
+            <div className="text-center py-8">Loading...</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Experience</TableHead>
+                  <TableHead>Skills</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pendingProviders.map((provider) => (
+                  <TableRow key={provider._id}>
+                    <TableCell>{provider.name}</TableCell>
+                    <TableCell>{provider.email}</TableCell>
+                    <TableCell>{provider.phone}</TableCell>
+                    <TableCell>{provider.experience_years} years</TableCell>
+                    <TableCell>{provider.skills.join(", ")}</TableCell>
+                    <TableCell>
+                      {new Date(provider.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="space-x-2">
+                      <Dialog
+                        open={openDialogs[`approve-${provider._id}`]}
+                        onOpenChange={(open) =>
+                          setOpenDialogs({
+                            ...openDialogs,
+                            [`approve-${provider._id}`]: open,
+                          })
+                        }
+                      >
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="default">
+                            Approve
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Approve Provider</DialogTitle>
+                            <DialogDescription>
+                              Are you sure you want to approve {provider.name}?
+                              They will be able to log in and accept jobs.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <Button
+                              variant="outline"
+                              onClick={() =>
                                 setOpenDialogs({
                                   ...openDialogs,
-                                  [`approve-${provider._id}`]: open,
+                                  [`approve-${provider._id}`]: false,
                                 })
                               }
                             >
-                              <DialogTrigger asChild>
-                                <Button size="sm" variant="default">
-                                  Approve
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Approve Provider</DialogTitle>
-                                  <DialogDescription>
-                                    Are you sure you want to approve {provider.name}?
-                                    They will be able to log in and accept jobs.
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <DialogFooter>
-                                  <Button
-                                    variant="outline"
-                                    onClick={() =>
-                                      setOpenDialogs({
-                                        ...openDialogs,
-                                        [`approve-${provider._id}`]: false,
-                                      })
-                                    }
-                                  >
-                                    Cancel
-                                  </Button>
-                                  <Button onClick={() => handleApprove(provider._id)}>
-                                    Confirm Approval
-                                  </Button>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
+                              Cancel
+                            </Button>
+                            <Button onClick={() => handleApprove(provider._id)}>
+                              Confirm Approval
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
 
-                            <Dialog
-                              open={openDialogs[`reject-${provider._id}`]}
-                              onOpenChange={(open) =>
+                      <Dialog
+                        open={openDialogs[`reject-${provider._id}`]}
+                        onOpenChange={(open) =>
+                          setOpenDialogs({
+                            ...openDialogs,
+                            [`reject-${provider._id}`]: open,
+                          })
+                        }
+                      >
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="destructive">
+                            Reject
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Reject Provider</DialogTitle>
+                            <DialogDescription>
+                              Are you sure you want to reject {provider.name}?
+                              This will keep their record but mark them as
+                              rejected.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <Button
+                              variant="outline"
+                              onClick={() =>
                                 setOpenDialogs({
                                   ...openDialogs,
-                                  [`reject-${provider._id}`]: open,
+                                  [`reject-${provider._id}`]: false,
                                 })
                               }
                             >
-                              <DialogTrigger asChild>
-                                <Button size="sm" variant="destructive">
-                                  Reject
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Reject Provider</DialogTitle>
-                                  <DialogDescription>
-                                    Are you sure you want to reject {provider.name}?
-                                    This will keep their record but mark them as rejected.
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <DialogFooter>
-                                  <Button
-                                    variant="outline"
-                                    onClick={() =>
-                                      setOpenDialogs({
-                                        ...openDialogs,
-                                        [`reject-${provider._id}`]: false,
-                                      })
-                                    }
-                                  >
-                                    Cancel
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    onClick={() => handleReject(provider._id)}
-                                  >
-                                    Confirm Rejection
-                                  </Button>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {pendingProviders.length === 0 && (
-                        <TableRow>
-                          <TableCell colSpan={7} className="text-center">
-                            No pending providers
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
+                              Cancel
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              onClick={() => handleReject(provider._id)}
+                            >
+                              Confirm Rejection
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {pendingProviders.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center">
+                      No pending providers
+                    </TableCell>
+                  </TableRow>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </>
   );
 }

@@ -71,11 +71,14 @@ export default function AdminPriceListsPage() {
         services.getAll(),
       ]);
 
-      setPriceListData(priceListsRes.data.data?.priceLists || []);
-      setServicesList(servicesRes.data.data?.services || []);
+      // API returns: { success: true, data: [priceLists array], pagination }
+      // queryHelper returns data as direct array, not wrapped in { priceLists: [] }
+      setPriceListData(priceListsRes.data.data || []);
+      // Services API also returns data as direct array
+      setServicesList(servicesRes.data.data || []);
     } catch (error: any) {
       console.error("Error fetching data:", error);
-      toast.error("Failed to load price lists");
+      toast.error(error.response?.data?.message || "Failed to load price lists");
     } finally {
       setLoading(false);
     }
