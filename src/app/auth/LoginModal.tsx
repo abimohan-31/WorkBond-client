@@ -33,7 +33,12 @@ import {
 import { toast } from "sonner";
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z
+    .string()
+    .min(1, "email is required")
+    .refine((val) => val.includes("@"), {
+      message: "invalid email address",
+    }),
   password: z.string().min(1, "Password is required"),
   role: z.enum(["customer", "provider", "admin"]),
 });

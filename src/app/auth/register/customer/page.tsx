@@ -18,12 +18,28 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
+import { auth } from "@/lib/api/auth";
 
 const registerCustomerSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters"),
-  email: z.string().email("Invalid email address"),
+  name: z
+    .string()
+    .min(1, "name is required")
+    .refine((val) => val.trim().length >= 3, {
+      message: "name must be at least 3 letters",
+    }),
+  email: z
+    .string()
+    .min(1, "email is required")
+    .refine((val) => val.includes("@"), {
+      message: "invalid email address",
+    }),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string(),
   phone: z.string().optional(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
 type RegisterCustomerFormValues = z.infer<typeof registerCustomerSchema>;
@@ -37,31 +53,25 @@ export default function RegisterCustomerPage() {
       name: "",
       email: "",
       password: "",
+      confirmPassword: "",
       phone: "",
     },
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const onSubmit = async (data: RegisterCustomerFormValues) => {
     try {
-      const response = await fetch("https://workbond-api.vercel.app/api/users/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ ...data, role: "customer" }),
-      });
+      const response = await auth.register({ ...data, role: "customer" });
+      const result = response.data;
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || "Registration failed");
-      }
-
+      // Login with token and user data
       login(result.data.token, result.data.user);
       toast.success("Account created successfully!");
       router.push("/");
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || error.message || "Registration failed");
     }
   };
 
@@ -123,7 +133,58 @@ export default function RegisterCustomerPage() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="******" {...field} />
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="******"
+                        {...field}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="******"
+                        {...field}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -14,23 +14,46 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
+import { auth } from "@/lib/api/auth";
 
 const registerProviderSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
+  name: z
+    .string()
+    .min(1, "name is required")
+    .refine((val) => val.trim().length >= 3, {
+      message: "name must be at least 3 letters",
+    }),
+  email: z
+    .string()
+    .min(1, "email is required")
+    .refine((val) => val.includes("@"), {
+      message: "invalid email address",
+    }),
   password: z.string().min(8, "Password must be at least 8 characters"),
   phone: z.string().min(10, "Phone number is required"),
-  address: z.string().min(5, "Address is required"),
+  address: z.string().min(1, "Address is required"),
   experience_years: z
     .string()
+    .min(1, "experience year is required")
     .refine((val) => !isNaN(Number(val)) && Number(val) >= 1, {
       message: "Experience must be a positive number",
     }),
   skills: z.string().min(2, "At least one skill is required"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
 type RegisterProviderFormValues = z.infer<typeof registerProviderSchema>;
@@ -47,34 +70,27 @@ export default function RegisterProviderPage() {
       address: "",
       experience_years: "",
       skills: "",
+      confirmPassword: "",
     },
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const onSubmit = async (data: RegisterProviderFormValues) => {
     try {
       const skillsArray = data.skills.split(",").map((s) => s.trim());
 
-      const response = await fetch(
-        "https://workbond-api.vercel.app/api/users/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...data,
-            experience_years: Number(data.experience_years),
-            role: "provider",
-            skills: skillsArray,
-          }),
-        }
-      );
+      const response = await auth.register({
+        ...data,
+        experience_years: Number(data.experience_years),
+        role: "provider",
+        skills: skillsArray,
+      });
 
-      const result = await response.json();
+      const result = response.data;
 
-      if (!response.ok) {
-        throw new Error(result.message || "Registration failed");
-      }
+
 
       toast.success(
         "Registration successful! Please wait for admin approval to log in."
@@ -157,9 +173,21 @@ export default function RegisterProviderPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Address</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="123 Main St, City" {...field} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your location" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Vavuniya">Vavuniya</SelectItem>
+                      <SelectItem value="Killinochchi">Killinochchi</SelectItem>
+                      <SelectItem value="Mannar">Mannar</SelectItem>
+                      <SelectItem value="Jaffna">Jaffna</SelectItem>
+                      <SelectItem value="Mullaitivu">Mullaitivu</SelectItem>
+                      <SelectItem value="Others">Others</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -187,7 +215,58 @@ export default function RegisterProviderPage() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="******" {...field} />
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="******"
+                        {...field}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="******"
+                        {...field}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
