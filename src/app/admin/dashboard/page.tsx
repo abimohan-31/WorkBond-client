@@ -27,7 +27,7 @@ import { adminApi, Provider, Customer } from "@/lib/api/admin";
 import { RefreshCw } from "lucide-react";
 
 export default function AdminDashboard() {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const [pendingProviders, setPendingProviders] = useState<Provider[]>([]);
   const [allProviders, setAllProviders] = useState<Provider[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -36,20 +36,16 @@ export default function AdminDashboard() {
   const [openDialogs, setOpenDialogs] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
-    if (token) {
-      fetchData();
-    }
-  }, [token]);
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
-    if (!token) return;
-
     try {
       setIsLoading(true);
       const [pendingRes, providersRes, customersRes] = await Promise.all([
-        adminApi.getPendingProviders(token),
-        adminApi.getAllProviders(token),
-        adminApi.getAllCustomers(token),
+        adminApi.getPendingProviders(),
+        adminApi.getAllProviders(),
+        adminApi.getAllCustomers(),
       ]);
 
       setPendingProviders(pendingRes.data?.providers || []);
@@ -75,10 +71,8 @@ export default function AdminDashboard() {
   };
 
   const handleApprove = async (id: string) => {
-    if (!token) return;
-
     try {
-      await adminApi.approveProvider(token, id);
+      await adminApi.approveProvider(id);
       toast.success("Provider approved successfully");
       setOpenDialogs({ ...openDialogs, [`approve-${id}`]: false });
       await fetchData();
@@ -91,10 +85,8 @@ export default function AdminDashboard() {
   };
 
   const handleReject = async (id: string) => {
-    if (!token) return;
-
     try {
-      await adminApi.rejectProvider(token, id);
+      await adminApi.rejectProvider(id);
       toast.success("Provider rejected successfully");
       setOpenDialogs({ ...openDialogs, [`reject-${id}`]: false });
       await fetchData();

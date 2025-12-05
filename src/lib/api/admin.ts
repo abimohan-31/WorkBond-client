@@ -1,6 +1,4 @@
-// API Configuration
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "/api";
+import apiClient from "../apiClient";
 
 // Types
 export interface Provider {
@@ -42,139 +40,67 @@ export interface ApiResponse<T> {
   };
 }
 
-// Helper function to get auth headers
-const getAuthHeaders = (token: string) => ({
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${token}`,
-});
-
 // Admin API Service
 export const adminApi = {
   /**
    * Get all pending providers
    */
   async getPendingProviders(
-    token: string,
     page = 1,
     limit = 10
   ): Promise<ApiResponse<{ providers: Provider[] }>> {
-    const response = await fetch(`${API_URL}/admins/providers/pending`, {
-      headers: getAuthHeaders(token),
+    const response = await apiClient.get("/providers/pending", {
+      params: { page, limit },
     });
-
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch pending providers: ${response.statusText}`
-      );
-    }
-
-    return response.json();
+    return response.data;
   },
 
   /**
    * Get all providers (approved)
    */
-  async getAllProviders(
-    token: string
-  ): Promise<ApiResponse<{ providers: Provider[] }>> {
-    const response = await fetch(`${API_URL}/admins/providers`, {
-      headers: getAuthHeaders(token),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch providers: ${response.statusText}`);
-    }
-
-    return response.json();
+  async getAllProviders(): Promise<ApiResponse<{ providers: Provider[] }>> {
+    const response = await apiClient.get("/providers/admin/all");
+    return response.data;
   },
 
   /**
    * Get all customers
    */
-  async getAllCustomers(
-    token: string
-  ): Promise<ApiResponse<{ customers: Customer[] }>> {
-    const response = await fetch(`${API_URL}/admins/customers`, {
-      headers: getAuthHeaders(token),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch customers: ${response.statusText}`);
-    }
-
-    return response.json();
+  async getAllCustomers(): Promise<ApiResponse<{ customers: Customer[] }>> {
+    const response = await apiClient.get("/customers");
+    return response.data;
   },
 
   /**
    * Approve a provider
    */
   async approveProvider(
-    token: string,
     providerId: string
   ): Promise<ApiResponse<{ provider: Provider }>> {
-    const url = `${API_URL}/admins/providers/${providerId}/approve`;
-    console.log("Approving provider at:", url);
-    const response = await fetch(
-      url,
-      {
-        method: "PATCH",
-        headers: getAuthHeaders(token),
-      }
-    );
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || `Failed to approve provider`);
-    }
-
-    return response.json();
+    const response = await apiClient.patch(`/providers/${providerId}/approve`);
+    return response.data;
   },
 
   /**
    * Reject a provider
    */
   async rejectProvider(
-    token: string,
     providerId: string,
     reason?: string
   ): Promise<ApiResponse<{ provider: Provider }>> {
-    const response = await fetch(
-      `${API_URL}/admins/providers/${providerId}/reject`,
-      {
-        method: "PATCH",
-        headers: getAuthHeaders(token),
-        body: JSON.stringify({ reason }),
-      }
+    const response = await apiClient.patch(
+      `/providers/${providerId}/reject`,
+      { reason }
     );
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || `Failed to reject provider`);
-    }
-
-    return response.json();
+    return response.data;
   },
 
   /**
    * Delete a provider permanently
    */
-  async deleteProvider(
-    token: string,
-    providerId: string
-  ): Promise<ApiResponse<void>> {
-    const response = await fetch(
-      `${API_URL}/admins/providers/${providerId}`,
-      {
-        method: "DELETE",
-        headers: getAuthHeaders(token),
-      }
-    );
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || `Failed to delete provider`);
-    }
-
-    return response.json();
+  async deleteProvider(providerId: string): Promise<ApiResponse<void>> {
+    const response = await apiClient.delete(`/providers/${providerId}`);
+    return response.data;
   },
 };
+
