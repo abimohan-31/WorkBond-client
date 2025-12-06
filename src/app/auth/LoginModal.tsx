@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
-import { auth } from "@/lib/api/auth";
+import { authService } from "@/services/auth.service";
 
 const loginSchema = z.object({
   email: z
@@ -67,11 +67,10 @@ export function LoginModal({
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
-      const response = await auth.login(data);
-      const result = response.data;
+      const result = await authService.login(data);
 
       if (!result.success) {
-        throw new Error(result.message || "Login failed");
+        throw new Error(result.message || result.error || "Login failed");
       }
 
       // Check if user data exists in response
@@ -79,8 +78,11 @@ export function LoginModal({
         throw new Error("Invalid response from server");
       }
 
-      // Login function only accepts userData (token is stored in httpOnly cookie by backend)
-      login(result.data.user);
+      // Get token from response (backend may return it or store in httpOnly cookie)
+      const token = result.data.token || "";
+      
+      // Login function accepts token and userData
+      await login(token, result.data.user);
       setOpen(false);
       if (onOpenChange) onOpenChange(false);
     } catch (error: any) {

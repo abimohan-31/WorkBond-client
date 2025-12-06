@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
-import { profiles } from "@/lib/apiClient";
+import { customerService } from "@/services/customer.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function CustomerProfilePage() {
   const { user } = useAuth();
@@ -17,8 +17,8 @@ export default function CustomerProfilePage() {
 
   const loadProfile = async () => {
     try {
-      const res = await profiles.getCustomer();
-      setProfile(res.data.data);
+      const res = await customerService.getProfile();
+      setProfile(res.data?.customer || null);
     } catch (err) {
       toast.error("Failed to load profile");
     }
@@ -26,7 +26,7 @@ export default function CustomerProfilePage() {
 
   const handleUpdate = async () => {
     try {
-      await profiles.updateCustomer(profile);
+      await customerService.updateProfile(profile);
       toast.success("Profile updated");
       setIsEditing(false);
     } catch (err) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -23,12 +23,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { adminApi, Provider } from "@/lib/api/admin";
+import { adminService } from "@/services/admin.service";
+import { ProviderType } from "@/types/provider";
 import { RefreshCw } from "lucide-react";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const [pendingProviders, setPendingProviders] = useState<Provider[]>([]);
+  const [pendingProviders, setPendingProviders] = useState<ProviderType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [openDialogs, setOpenDialogs] = useState<{ [key: string]: boolean }>(
@@ -43,7 +44,7 @@ export default function AdminDashboard() {
     try {
       setIsLoading(true);
       // Only fetch pending providers for dashboard - customers and providers should be loaded on their dedicated pages
-      const pendingRes = await adminApi.getPendingProviders();
+      const pendingRes = await adminService.getPendingProviders();
       setPendingProviders(pendingRes.data?.providers || []);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -66,7 +67,7 @@ export default function AdminDashboard() {
 
   const handleApprove = async (id: string) => {
     try {
-      await adminApi.approveProvider(id);
+      await adminService.approveProvider(id);
       toast.success("Provider approved successfully");
       setOpenDialogs({ ...openDialogs, [`approve-${id}`]: false });
       await fetchData();
@@ -80,7 +81,7 @@ export default function AdminDashboard() {
 
   const handleReject = async (id: string) => {
     try {
-      await adminApi.rejectProvider(id);
+      await adminService.rejectProvider(id);
       toast.success("Provider rejected successfully");
       setOpenDialogs({ ...openDialogs, [`reject-${id}`]: false });
       await fetchData();
@@ -145,7 +146,9 @@ export default function AdminDashboard() {
                     <TableCell>{provider.experience_years} years</TableCell>
                     <TableCell>{provider.skills.join(", ")}</TableCell>
                     <TableCell>
-                      {new Date(provider.createdAt).toLocaleDateString()}
+                      {provider.createdAt
+                        ? new Date(provider.createdAt).toLocaleDateString()
+                        : "N/A"}
                     </TableCell>
                     <TableCell className="space-x-2">
                       <Dialog

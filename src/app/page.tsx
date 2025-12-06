@@ -4,10 +4,8 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import {
-  services as servicesApi,
-  priceLists as priceListsApi,
-} from "@/lib/apiClient";
+import { serviceService } from "@/services/service.service";
+import { priceListService } from "@/services/priceList.service";
 import { toast } from "sonner";
 
 interface Service {
@@ -54,19 +52,19 @@ export default function Home() {
       console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
 
       const [servicesRes, priceListsRes] = await Promise.all([
-        servicesApi.getAll(),
-        priceListsApi.getAll(),
+        serviceService.getAll(),
+        priceListService.getAll(),
       ]);
 
       console.log("Services response:", servicesRes.data);
       console.log("Price lists response:", priceListsRes.data);
 
       // Both endpoints return data array directly in data property
-      setServices(servicesRes.data.data || []);
-      setPriceLists(priceListsRes.data.data || []);
+      setServices(servicesRes.data || []);
+      setPriceLists(priceListsRes.data || []);
 
-      console.log("Services loaded:", servicesRes.data.data?.length || 0);
-      console.log("Price lists loaded:", priceListsRes.data.data?.length || 0);
+      console.log("Services loaded:", servicesRes.data?.length || 0);
+      console.log("Price lists loaded:", priceListsRes.data?.length || 0);
     } catch (error: any) {
       console.error("Error fetching data:", error);
       console.error("Error details:", error.response?.data || error.message);
@@ -170,7 +168,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <Input
               type="text"
-              placeholder="Search services..."
+              placeholder="Search serviceService..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="md:w-1/2"
@@ -190,7 +188,7 @@ export default function Home() {
 
           {loading ? (
             <div className="text-center py-12">
-              <p className="text-gray-600">Loading services...</p>
+              <p className="text-gray-600">Loading serviceService...</p>
             </div>
           ) : filteredServices.length === 0 ? (
             <div className="text-center py-12">

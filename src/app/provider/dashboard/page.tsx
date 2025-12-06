@@ -1,38 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { jobPosts, providers } from "@/lib/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { jobPostService } from "@/services/jobPost.service";
+import { providerService } from "@/services/provider.service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-interface JobPost {
-  _id: string;
-  title: string;
-  description: string;
-  location?: string;
-  duration: string;
-  service_id: {
-    _id: string;
-    name: string;
-    category: string;
-  };
-  customerId: {
-    _id: string;
-    name: string;
-    email: string;
-    phone?: string;
-  };
-  applications: Array<{
-    providerId: string | { _id: string; name: string };
-    status: string;
-    appliedAt: string;
-  }>;
-  createdAt: string;
-}
+import { JobPostType } from "@/types/jobPost";
 
 export default function ProviderDashboard() {
   const { user } = useAuth();
@@ -42,7 +20,7 @@ export default function ProviderDashboard() {
     rating: 0,
     profileImage: null as string | null,
   });
-  const [jobPostsList, setJobPostsList] = useState<JobPost[]>([]);
+  const [jobPostsList, setJobPostsList] = useState<JobPostType[]>([]);
   const [loading, setLoading] = useState(true);
   const [jobsLoading, setJobsLoading] = useState(true);
 
@@ -57,30 +35,31 @@ export default function ProviderDashboard() {
     try {
       setLoading(true);
       const [jobsRes, profileRes, reviewsRes] = await Promise.all([
-        jobPosts.getAll(),
-        providers.getProfile(),
-        providers.getReviews(),
+        jobPostService.getAll(),
+        providerService.getProfile(),
+        providerService.getReviews(),
       ]);
 
-      const myApplications = jobsRes.data.data?.filter((job: JobPost) =>
+      const myApplications = jobsRes.data?.filter((job: JobPostType) =>
         job.applications?.some((app: any) => {
           const providerId = typeof app.providerId === 'object' ? app.providerId._id : app.providerId;
           return providerId === user?._id && app.status === "approved";
         })
       ) || [];
 
-      const profile = profileRes.data.data?.provider || profileRes.data.data;
-      const reviews = reviewsRes.data.data?.reviews || [];
+      const profile = profileRes.data?.provider || profileRes.data;
+      const reviews = reviewsRes.data?.reviews || [];
       
       const avgRating = reviews.length > 0
         ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
         : 0;
 
+      const providerData = (profile as any)?.provider || profile;
       setStats({
         activeJobs: myApplications.length,
         totalEarnings: 0,
-        rating: profile?.rating || avgRating || 0,
-        profileImage: profile?.profileImage || null,
+        rating: (providerData as any)?.rating || avgRating || 0,
+        profileImage: (providerData as any)?.profileImage || null,
       });
     } catch (error: any) {
       console.error("Error fetching stats:", error);
@@ -93,8 +72,8 @@ export default function ProviderDashboard() {
   const fetchJobPosts = async () => {
     try {
       setJobsLoading(true);
-      const res = await jobPosts.getAll();
-      const jobs = res.data.data || [];
+      const res = await jobPostService.getAll();
+      const jobs = res.data || [];
       setJobPostsList(Array.isArray(jobs) ? jobs.slice(0, 6) : []);
     } catch (error: any) {
       console.error("Error fetching job posts:", error);
@@ -106,7 +85,7 @@ export default function ProviderDashboard() {
 
   const handleApply = async (jobId: string) => {
     try {
-      await jobPosts.apply(jobId);
+      await jobPostService.apply(jobId);
       toast.success("Application submitted successfully");
       fetchJobPosts();
       fetchStats();
@@ -115,7 +94,7 @@ export default function ProviderDashboard() {
     }
   };
 
-  const hasApplied = (job: JobPost) => {
+  const hasApplied = (job: JobPostType) => {
     return job.applications?.some((app: any) => {
       const providerId = typeof app.providerId === 'object' ? app.providerId._id : app.providerId;
       return providerId === user?._id;

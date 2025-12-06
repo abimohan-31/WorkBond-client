@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { auth } from "@/lib/api/auth";
+import { authService } from "@/services/auth.service";
 
 const registerProviderSchema = z.object({
   name: z
@@ -81,16 +81,16 @@ export default function RegisterProviderPage() {
     try {
       const skillsArray = data.skills.split(",").map((s) => s.trim());
 
-      const response = await auth.register({
+      const result = await authService.register({
         ...data,
         experience_years: Number(data.experience_years),
         role: "provider",
         skills: skillsArray,
       });
 
-      const result = response.data;
-
-
+      if (!result.success) {
+        throw new Error(result.message || result.error || "Registration failed");
+      }
 
       toast.success(
         "Registration successful! Please wait for admin approval to log in."

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { reviews, profiles } from "@/lib/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { reviewService } from "@/services/review.service";
+import { customerService } from "@/services/customer.service";
 import apiClient from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,12 +57,12 @@ export default function CustomerReviewsPage() {
     try {
       setLoading(true);
       const [reviewsRes, providersRes] = await Promise.all([
-        reviews.getAll(),
+        reviewService.getAll(),
         apiClient.get("/customers/providers"),
       ]);
 
-      setReviewList(reviewsRes.data.data?.reviews || []);
-      setProviders(providersRes.data.data?.providers || []);
+      setReviewList(reviewsRes.data || []);
+      setProviders(providersRes.data || []);
     } catch (error: any) {
       console.error("Error fetching data:", error);
       toast.error("Failed to load reviews");
@@ -77,7 +78,7 @@ export default function CustomerReviewsPage() {
     }
 
     try {
-      await reviews.create(newReview);
+      await reviewService.create(newReview);
       toast.success("Review posted successfully");
       setIsCreateDialogOpen(false);
       setNewReview({ provider_id: "", rating: 5, comment: "" });
@@ -92,7 +93,7 @@ export default function CustomerReviewsPage() {
     if (!confirm("Are you sure you want to delete this review?")) return;
 
     try {
-      await reviews.delete(id);
+      await reviewService.delete(id);
       toast.success("Review deleted");
       fetchData();
     } catch (error: any) {
@@ -173,7 +174,7 @@ export default function CustomerReviewsPage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <p className="text-gray-600">Loading reviews...</p>
+          <p className="text-gray-600">Loading reviewService...</p>
         </div>
       ) : reviewList.length === 0 ? (
         <Card>
@@ -207,7 +208,10 @@ export default function CustomerReviewsPage() {
               <CardContent>
                 <p className="text-gray-700">{review.comment}</p>
                 <p className="text-sm text-gray-500 mt-2">
-                  Posted on {new Date(review.review_date).toLocaleDateString()}
+                  Posted on{" "}
+                  {review.review_date
+                    ? new Date(review.review_date).toLocaleDateString()
+                    : "N/A"}
                 </p>
               </CardContent>
             </Card>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { services } from "@/lib/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { serviceService } from "@/services/service.service";
+import { ServiceType } from "@/types/service";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,16 +18,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-interface Service {
-  _id: string;
-  name: string;
-  description: string;
-  category: string;
-  base_price: number;
-  unit: string;
-  isActive: boolean;
-}
 
 const categories = [
   "Cleaning",
@@ -43,7 +34,7 @@ const units = ["hour", "day", "project", "item", "1 square feet"];
 
 export default function AdminServicesPage() {
   const { user } = useAuth();
-  const [serviceList, setServiceList] = useState<Service[]>([]);
+  const [serviceList, setServiceList] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newService, setNewService] = useState({
@@ -65,10 +56,10 @@ export default function AdminServicesPage() {
       setLoading(true);
       // Admin should see all services (active and inactive)
       // Pass isActive=false to override default filter, or pass empty to get all
-      const res = await services.getAll();
+      const res = await serviceService.getAll();
       // API returns: { success: true, data: [services array], pagination }
       // queryHelper returns data as direct array, not wrapped in { services: [] }
-      setServiceList(res.data.data || []);
+      setServiceList(res.data || []);
     } catch (error: any) {
       console.error("Error loading services:", error);
       toast.error(error.response?.data?.message || "Failed to load services");
@@ -88,7 +79,7 @@ export default function AdminServicesPage() {
     }
 
     try {
-      await services.create(newService);
+      await serviceService.create(newService);
       toast.success("Service created successfully");
       setIsCreateDialogOpen(false);
       setNewService({
@@ -109,7 +100,7 @@ export default function AdminServicesPage() {
     if (!confirm("Are you sure you want to delete this service?")) return;
 
     try {
-      await services.delete(id);
+      await serviceService.delete(id);
       toast.success("Service deleted");
       loadServices();
     } catch (error: any) {

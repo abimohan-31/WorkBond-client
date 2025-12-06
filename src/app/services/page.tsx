@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { services } from "@/lib/apiClient";
+import { serviceService } from "@/services/service.service";
+import { ServiceType } from "@/types/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
 export default function PublicServicesPage() {
-  const [serviceList, setServiceList] = useState([]);
+  const [serviceList, setServiceList] = useState<ServiceType[]>([]);
 
   useEffect(() => {
     loadServices();
@@ -13,8 +14,8 @@ export default function PublicServicesPage() {
 
   const loadServices = async () => {
     try {
-      const res = await services.getAll();
-      setServiceList(res.data.data || []);
+      const res = await serviceService.getAll();
+      setServiceList(res.data || []);
     } catch (err) {
       toast.error("Failed to load services");
     }

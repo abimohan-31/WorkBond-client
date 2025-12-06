@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { auth } from "@/lib/api/auth";
+import { authService } from "@/services/auth.service";
 
 const registerCustomerSchema = z
   .object({
@@ -68,15 +68,14 @@ export default function RegisterCustomerPage() {
       // Remove confirmPassword before sending to backend
       const { confirmPassword, ...registerData } = data;
 
-      const response = await auth.register({
+      const result = await authService.register({
         ...registerData,
         role: "customer",
       });
-      const result = response.data;
 
       // Check if registration was successful
       if (!result.success) {
-        throw new Error(result.message || "Registration failed");
+        throw new Error(result.message || result.error || "Registration failed");
       }
 
       // Check if user data exists in response
@@ -87,16 +86,16 @@ export default function RegisterCustomerPage() {
       // Automatically log in the user after successful registration
       // Backend doesn't set cookie during registration, so we need to login
       try {
-        const loginResponse = await auth.login({
+        const loginResult = await authService.login({
           email: data.email,
           password: data.password,
           role: "customer",
         });
-        const loginResult = loginResponse.data;
 
         if (loginResult.success && loginResult.data?.user) {
-          // Login function only accepts userData (backend sets httpOnly cookie during login)
-          login(loginResult.data.user);
+          // Login function accepts token and userData
+          const token = loginResult.data.token || "";
+          await login(token, loginResult.data.user);
           toast.success("Account created and logged in successfully!");
           router.push("/customer/dashboard");
         } else {
@@ -126,7 +125,7 @@ export default function RegisterCustomerPage() {
         <div className="text-center">
           <h1 className="text-3xl font-bold">Sign Up as Customer</h1>
           <p className="text-muted-foreground mt-2">
-            Create an account to book services.
+            Create an account to book serviceService.
           </p>
         </div>
 

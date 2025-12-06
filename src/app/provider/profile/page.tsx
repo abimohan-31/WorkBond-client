@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { profiles } from "@/lib/apiClient";
+import { providerService } from "@/services/provider.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ProviderProfilePage() {
   const { user } = useAuth();
@@ -18,8 +18,8 @@ export default function ProviderProfilePage() {
 
   const loadProfile = async () => {
     try {
-      const res = await profiles.getProvider();
-      setProfile(res.data.data);
+      const res = await providerService.getProfile();
+      setProfile(res.data?.provider || null);
     } catch (err) {
       toast.error("Failed to load profile");
     }
@@ -27,7 +27,7 @@ export default function ProviderProfilePage() {
 
   const handleUpdate = async () => {
     try {
-      await profiles.updateProvider(profile);
+      await providerService.updateProfile(profile);
       toast.success("Profile updated");
       setIsEditing(false);
     } catch (err) {

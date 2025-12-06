@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { providers } from "@/lib/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { providerService } from "@/services/provider.service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
@@ -29,8 +29,8 @@ export default function ProviderReviewsPage() {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const res = await providers.getReviews();
-      const reviewData = res.data.data?.reviews || [];
+      const res = await providerService.getReviews();
+      const reviewData = res.data?.reviews || [];
       setReviews(reviewData);
 
       if (reviewData.length > 0) {
@@ -98,7 +98,10 @@ export default function ProviderReviewsPage() {
               <CardContent>
                 <p className="text-gray-700">{review.comment}</p>
                 <p className="text-sm text-gray-500 mt-2">
-                  Posted on {new Date(review.review_date).toLocaleDateString()}
+                  Posted on{" "}
+                  {review.review_date
+                    ? new Date(review.review_date).toLocaleDateString()
+                    : "N/A"}
                 </p>
               </CardContent>
             </Card>

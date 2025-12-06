@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { priceLists, services } from "@/lib/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { priceListService } from "@/services/priceList.service";
+import { serviceService } from "@/services/service.service";
+import { PriceListType } from "@/types/priceList";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,19 +20,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-interface PriceList {
-  _id: string;
-  service_id: any;
-  price_type: "fixed" | "per_unit" | "range";
-  fixed_price?: number;
-  unit_price?: number;
-  unit?: string;
-  min_price?: number;
-  max_price?: number;
-  description?: string;
-  isActive: boolean;
-}
-
 interface Service {
   _id: string;
   name: string;
@@ -42,7 +31,7 @@ const units = ["hour", "day", "project", "item", "square_feet", "square_meter"];
 
 export default function AdminPriceListsPage() {
   const { user } = useAuth();
-  const [priceListData, setPriceListData] = useState<PriceList[]>([]);
+  const [priceListData, setPriceListData] = useState<PriceListType[]>([]);
   const [servicesList, setServicesList] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -67,15 +56,15 @@ export default function AdminPriceListsPage() {
     try {
       setLoading(true);
       const [priceListsRes, servicesRes] = await Promise.all([
-        priceLists.getAll(),
-        services.getAll(),
+        priceListService.getAll(),
+        serviceService.getAll(),
       ]);
 
       // API returns: { success: true, data: [priceLists array], pagination }
       // queryHelper returns data as direct array, not wrapped in { priceLists: [] }
-      setPriceListData(priceListsRes.data.data || []);
+      setPriceListData(priceListsRes.data || []);
       // Services API also returns data as direct array
-      setServicesList(servicesRes.data.data || []);
+      setServicesList(servicesRes.data || []);
     } catch (error: any) {
       console.error("Error fetching data:", error);
       toast.error(error.response?.data?.message || "Failed to load price lists");
@@ -123,7 +112,7 @@ export default function AdminPriceListsPage() {
     }
 
     try {
-      await priceLists.create(payload);
+      await priceListService.create(payload);
       toast.success("Price list created successfully");
       setIsCreateDialogOpen(false);
       setNewPriceList({
@@ -147,7 +136,7 @@ export default function AdminPriceListsPage() {
     if (!confirm("Are you sure you want to delete this price list?")) return;
 
     try {
-      await priceLists.delete(id);
+      await priceListService.delete(id);
       toast.success("Price list deleted");
       fetchData();
     } catch (error: any) {
@@ -156,7 +145,7 @@ export default function AdminPriceListsPage() {
     }
   };
 
-  const getPriceDisplay = (priceList: PriceList) => {
+  const getPriceDisplay = (priceList: PriceListType) => {
     if (priceList.price_type === "fixed") {
       return `$${priceList.fixed_price} (Fixed)`;
     } else if (priceList.price_type === "per_unit") {

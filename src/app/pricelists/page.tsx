@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { priceLists as priceListsApi } from "@/lib/apiClient";
+import { priceListService } from "@/services/priceList.service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -18,8 +18,8 @@ export default function PublicPriceListsPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const res = await priceListsApi.getAll();
-      setList(res.data.data || []); // Backend returns data array directly
+      const res = await priceListService.getAll();
+      setList(res.data || []); // Backend returns data array directly
     } catch (err) {
       console.error("Error loading price lists:", err);
       toast.error("Failed to load price lists");

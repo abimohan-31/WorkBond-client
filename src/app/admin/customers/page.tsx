@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -12,13 +12,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { adminApi, Customer } from "@/lib/api/admin";
+import { adminService } from "@/services/admin.service";
+import { CustomerType } from "@/types/customer";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function AdminCustomersPage() {
   const { user } = useAuth();
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customers, setCustomers] = useState<CustomerType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -31,7 +32,7 @@ export default function AdminCustomersPage() {
   const fetchCustomers = async () => {
     try {
       setIsLoading(true);
-      const response = await adminApi.getAllCustomers();
+      const response = await adminService.getAllCustomers();
       // API returns: { success: true, data: { customers: [], pagination: {} } }
       setCustomers(response.data?.customers || []);
     } catch (error) {
@@ -96,7 +97,9 @@ export default function AdminCustomersPage() {
                     <TableCell>{customer.email}</TableCell>
                     <TableCell>{customer.phone || "N/A"}</TableCell>
                     <TableCell>
-                      {new Date(customer.createdAt).toLocaleDateString()}
+                      {customer.createdAt
+                        ? new Date(customer.createdAt).toLocaleDateString()
+                        : "N/A"}
                     </TableCell>
                   </TableRow>
                 ))}

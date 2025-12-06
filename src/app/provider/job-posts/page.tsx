@@ -1,33 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { jobPosts } from "@/lib/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { jobPostService } from "@/services/jobPost.service";
+import { JobPostType } from "@/types/jobPost";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-interface JobPost {
-  _id: string;
-  title: string;
-  description: string;
-  duration: string;
-  service_id: any;
-  location?: string;
-  customerId: any;
-  applications: Array<{
-    _id: string;
-    providerId: string;
-    status: string;
-    appliedAt: string;
-  }>;
-  createdAt: string;
-}
-
 export default function ProviderJobPostsPage() {
   const { user } = useAuth();
-  const [allJobs, setAllJobs] = useState<JobPost[]>([]);
+  const [allJobs, setAllJobs] = useState<JobPostType[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,8 +23,8 @@ export default function ProviderJobPostsPage() {
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const res = await jobPosts.getAll();
-      setAllJobs(res.data.data?.jobPosts || []);
+      const res = await jobPostService.getAll();
+      setAllJobs(res.data || []);
     } catch (error: any) {
       console.error("Error fetching jobs:", error);
       toast.error("Failed to load job posts");
@@ -51,7 +35,7 @@ export default function ProviderJobPostsPage() {
 
   const handleApply = async (jobId: string) => {
     try {
-      await jobPosts.apply(jobId);
+      await jobPostService.apply(jobId);
       toast.success("Application submitted successfully");
       fetchJobs();
     } catch (error: any) {
@@ -60,13 +44,23 @@ export default function ProviderJobPostsPage() {
     }
   };
 
-  const hasApplied = (job: JobPost) => {
-    return job.applications?.some((app) => app.providerId === user?._id);
+  const hasApplied = (job: JobPostType) => {
+    return job.applications?.some((app) => {
+      const providerId = typeof app.providerId === 'object' && app.providerId !== null 
+        ? (app.providerId as any)._id 
+        : app.providerId;
+      return providerId === user?._id;
+    });
   };
 
-  const getApplicationStatus = (job: JobPost) => {
-    const app = job.applications?.find((app) => app.providerId === user?._id);
-    return app?.status || null;
+  const getApplicationStatus = (job: JobPostType) => {
+    const application = job.applications?.find((app) => {
+      const providerId = typeof app.providerId === 'object' && app.providerId !== null 
+        ? (app.providerId as any)._id 
+        : app.providerId;
+      return providerId === user?._id;
+    });
+    return application?.status || null;
   };
 
   const availableJobs = allJobs.filter((job) => !hasApplied(job));

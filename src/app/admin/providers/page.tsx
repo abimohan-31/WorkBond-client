@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -12,13 +12,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { adminApi, Provider } from "@/lib/api/admin";
+import { adminService } from "@/services/admin.service";
+import { ProviderType } from "@/types/provider";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function AdminProvidersPage() {
   const { user } = useAuth();
-  const [providers, setProviders] = useState<Provider[]>([]);
+  const [providers, setProviders] = useState<ProviderType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -31,7 +32,7 @@ export default function AdminProvidersPage() {
   const fetchProviders = async () => {
     try {
       setIsLoading(true);
-      const response = await adminApi.getAllProvidersForAdmin();
+      const response = await adminService.getAllProviders();
       // API returns: { success: true, data: providers[] } (direct array, not wrapped)
       setProviders(response.data || []);
     } catch (error) {

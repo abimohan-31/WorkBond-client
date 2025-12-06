@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { jobPosts, services as servicesApi } from "@/lib/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { jobPostService } from "@/services/jobPost.service";
+import { serviceService } from "@/services/service.service";
+import { JobPostType } from "@/types/jobPost";
+import { ServiceType } from "@/types/service";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,33 +21,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-interface JobPost {
-  _id: string;
-  title: string;
-  description: string;
-  duration: string;
-  service_id: any;
-  location?: string;
-  customerId: string;
-  applications: Array<{
-    _id: string;
-    providerId: any;
-    status: string;
-    appliedAt: string;
-  }>;
-  createdAt: string;
-}
-
-interface Service {
-  _id: string;
-  name: string;
-  category: string;
-}
-
 export default function CustomerJobPostsPage() {
   const { user } = useAuth();
-  const [jobs, setJobs] = useState<JobPost[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
+  const [jobs, setJobs] = useState<JobPostType[]>([]);
+  const [services, setServices] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [filterService, setFilterService] = useState<string>("all");
@@ -66,12 +46,12 @@ export default function CustomerJobPostsPage() {
     try {
       setLoading(true);
       const [jobsRes, servicesRes] = await Promise.all([
-        jobPosts.getAll(),
-        servicesApi.getAll(),
+        jobPostService.getAll(),
+        serviceService.getAll(),
       ]);
 
-      setJobs(jobsRes.data.data?.jobPosts || []);
-      setServices(servicesRes.data.data?.services || []);
+      setJobs(jobsRes.data || []);
+      setServices(servicesRes.data || []);
     } catch (error: any) {
       console.error("Error fetching data:", error);
       toast.error("Failed to load job posts");
@@ -87,7 +67,7 @@ export default function CustomerJobPostsPage() {
     }
 
     try {
-      await jobPosts.create(newJob);
+      await jobPostService.create(newJob);
       toast.success("Job posted successfully");
       setIsCreateDialogOpen(false);
       setNewJob({ title: "", description: "", duration: "", service_id: "", location: "" });
@@ -102,7 +82,7 @@ export default function CustomerJobPostsPage() {
     if (!confirm("Are you sure you want to delete this job post?")) return;
 
     try {
-      await jobPosts.delete(id);
+      await jobPostService.delete(id);
       toast.success("Job post deleted");
       fetchData();
     } catch (error: any) {
@@ -113,7 +93,7 @@ export default function CustomerJobPostsPage() {
 
   const handleApproveApplication = async (jobId: string, appId: string) => {
     try {
-      await jobPosts.approve(jobId, appId);
+      await jobPostService.approve(jobId, appId);
       toast.success("Application approved");
       fetchData();
     } catch (error: any) {
@@ -124,7 +104,7 @@ export default function CustomerJobPostsPage() {
 
   const handleRejectApplication = async (jobId: string, appId: string) => {
     try {
-      await jobPosts.reject(jobId, appId);
+      await jobPostService.reject(jobId, appId);
       toast.success("Application rejected");
       fetchData();
     } catch (error: any) {
@@ -387,24 +367,24 @@ export default function CustomerJobPostsPage() {
                         >
                           <div>
                             <p className="font-medium">
-                              {typeof app.providerId === 'object' ? app.providerId.name : 'Provider'}
+                              {typeof app.providerId === 'object' && app.providerId !== null ? (app.providerId as any).name : 'Provider'}
                             </p>
                             <p className="text-sm text-gray-500">
                               Status: <span className="capitalize">{app.status}</span>
                             </p>
                           </div>
-                          {app.status === "applied" && (
+                          {app.status === "applied" && app._id && (
                             <div className="space-x-2">
                               <Button
                                 size="sm"
-                                onClick={() => handleApproveApplication(job._id, app._id)}
+                                onClick={() => app._id && handleApproveApplication(job._id, app._id)}
                               >
                                 Approve
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleRejectApplication(job._id, app._id)}
+                                onClick={() => app._id && handleRejectApplication(job._id, app._id)}
                               >
                                 Reject
                               </Button>

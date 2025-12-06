@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { services, jobPosts, reviews } from "@/lib/apiClient";
+import { serviceService } from "@/services/service.service";
+import { jobPostService } from "@/services/jobPost.service";
+import { reviewService } from "@/services/review.service";
+import { customerService } from "@/services/customer.service";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -54,20 +57,18 @@ export default function CustomerDashboard() {
     try {
       setLoading(true);
       const [jobPostsRes, reviewsRes, profileRes] = await Promise.all([
-        jobPosts.getAll(),
-        reviews.getAll(),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "/api"}/customers/profile`, {
-          credentials: "include",
-        }).then((r) => r.json()).catch(() => null),
+        jobPostService.getAll(),
+        reviewService.getAll(),
+        customerService.getProfile().catch(() => null),
       ]);
 
-      const jobPostsData = jobPostsRes.data.data || [];
-      const reviewsData = reviewsRes.data.data?.reviews || reviewsRes.data.data || [];
+      const jobPostsData = jobPostsRes.data || [];
+      const reviewsData = reviewsRes.data || [];
       
       setStats({
         jobPosts: Array.isArray(jobPostsData) ? jobPostsData.length : 0,
         reviews: Array.isArray(reviewsData) ? reviewsData.length : 0,
-        profileImage: profileRes?.data?.customer?.profileImage || profileRes?.data?.profileImage || null,
+        profileImage: profileRes?.data?.customer?.profileImage || null,
       });
     } catch (error: any) {
       console.error("Error fetching stats:", error);
@@ -80,20 +81,14 @@ export default function CustomerDashboard() {
   const fetchServices = async () => {
     try {
       setServicesLoading(true);
-      const servicesRes = await services.getAll();
-      const allServices = servicesRes.data.data || [];
+      const servicesRes = await serviceService.getAll();
+      const allServices = servicesRes.data || [];
 
       const servicesWithProviders = await Promise.all(
-        allServices.slice(0, 12).map(async (service: Service) => {
+        allServices.slice(0, 12).map(async (service) => {
           try {
-            const providersRes = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL || "/api"}/services/${service._id}/providers`,
-              {
-                credentials: "include",
-              }
-            );
-            const providersData = await providersRes.json();
-            const providers = providersData.data?.providers || [];
+            const providersRes = await serviceService.getProviders(service._id);
+            const providers = providersRes.data?.providers || [];
             
             return {
               ...service,
@@ -179,7 +174,7 @@ export default function CustomerDashboard() {
         </div>
 
         {servicesLoading ? (
-          <div className="text-center py-8">Loading services...</div>
+          <div className="text-center py-8">Loading serviceService...</div>
         ) : servicesList.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">

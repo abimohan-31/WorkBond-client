@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
-import { subscriptions } from "@/lib/apiClient";
+import { subscriptionService } from "@/services/subscription.service";
+import { SubscriptionType } from "@/types/subscription";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/usePermissions";
 
 export default function ProviderSubscriptionsPage() {
-  const [subList, setSubList] = useState([]);
+  const [subList, setSubList] = useState<SubscriptionType[]>([]);
   const { canViewSubscriptions } = usePermissions();
 
   useEffect(() => {
@@ -16,8 +17,8 @@ export default function ProviderSubscriptionsPage() {
 
   const loadSubs = async () => {
     try {
-      const res = await subscriptions.getAll();
-      setSubList(res.data.data || []);
+      const res = await subscriptionService.getAll();
+      setSubList(res.data || []);
     } catch (err) {
       toast.error("Failed to load subscriptions");
     }
