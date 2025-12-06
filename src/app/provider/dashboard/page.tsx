@@ -129,13 +129,13 @@ export default function ProviderDashboard() {
   return (
     <>
       <div className="flex items-center gap-4 mb-8">
-        <Avatar className="h-16 w-16">
+        {/* <Avatar className="h-16 w-16">
           <AvatarImage
             src={stats.profileImage || user.profileImage || "/avatars/01.png"}
             alt={user.name}
           />
           <AvatarFallback className="text-xl">{user.name.charAt(0)}</AvatarFallback>
-        </Avatar>
+        </Avatar> */}
         <div>
           <h1 className="text-3xl font-bold">Provider Dashboard</h1>
           <p className="text-muted-foreground">Welcome back, {user.name}</p>
