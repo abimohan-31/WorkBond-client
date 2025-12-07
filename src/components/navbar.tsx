@@ -37,6 +37,9 @@ export function Navbar() {
         <div className="flex items-center space-x-4">
           {!user ? (
             <>
+              <Link href="/">
+                <Button variant="destructive">Home</Button>
+              </Link>
               <Link href="/auth/register/provider">
                 <Button variant="ghost">Join as a Provider</Button>
               </Link>
