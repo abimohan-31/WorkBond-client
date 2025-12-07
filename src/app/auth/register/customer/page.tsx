@@ -75,7 +75,9 @@ export default function RegisterCustomerPage() {
 
       // Check if registration was successful
       if (!result.success) {
-        throw new Error(result.message || result.error || "Registration failed");
+        throw new Error(
+          result.message || result.error || "Registration failed"
+        );
       }
 
       // Check if user data exists in response
@@ -101,12 +103,12 @@ export default function RegisterCustomerPage() {
         } else {
           // Registration successful but auto-login failed, redirect to login
           toast.success("Account created successfully! Please log in.");
-          router.push("/");
+          router.push("/auth/login");
         }
       } catch (loginError: any) {
         // Registration successful but auto-login failed, redirect to login
         toast.success("Account created successfully! Please log in.");
-        router.push("/");
+        router.push("/auth/login");
       }
     } catch (error: any) {
       const errorMessage =
@@ -125,7 +127,7 @@ export default function RegisterCustomerPage() {
         <div className="text-center">
           <h1 className="text-3xl font-bold">Sign Up as Customer</h1>
           <p className="text-muted-foreground mt-2">
-            Create an account to book serviceService.
+            Create an account to book services.
           </p>
         </div>
 
@@ -244,7 +246,7 @@ export default function RegisterCustomerPage() {
 
         <div className="text-center text-sm">
           Already have an account?{" "}
-          <Link href="/" className="underline hover:text-primary">
+          <Link href="/auth/login" className="underline hover:text-primary">
             Log in
           </Link>
         </div>

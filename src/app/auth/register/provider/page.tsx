@@ -27,34 +27,36 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { authService } from "@/services/auth.service";
 
-const registerProviderSchema = z.object({
-  name: z
-    .string()
-    .min(1, "name is required")
-    .refine((val) => val.trim().length >= 3, {
-      message: "name must be at least 3 letters",
-    }),
-  email: z
-    .string()
-    .min(1, "email is required")
-    .refine((val) => val.includes("@"), {
-      message: "invalid email address",
-    }),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  phone: z.string().min(10, "Phone number is required"),
-  address: z.string().min(1, "Address is required"),
-  experience_years: z
-    .string()
-    .min(1, "experience year is required")
-    .refine((val) => !isNaN(Number(val)) && Number(val) >= 1, {
-      message: "Experience must be a positive number",
-    }),
-  skills: z.string().min(2, "At least one skill is required"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+const registerProviderSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, "name is required")
+      .refine((val) => val.trim().length >= 3, {
+        message: "name must be at least 3 letters",
+      }),
+    email: z
+      .string()
+      .min(1, "email is required")
+      .refine((val) => val.includes("@"), {
+        message: "invalid email address",
+      }),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    phone: z.string().min(10, "Phone number is required"),
+    address: z.string().min(1, "Address is required"),
+    experience_years: z
+      .string()
+      .min(1, "experience year is required")
+      .refine((val) => !isNaN(Number(val)) && Number(val) >= 1, {
+        message: "Experience must be a positive number",
+      }),
+    skills: z.string().min(2, "At least one skill is required"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 type RegisterProviderFormValues = z.infer<typeof registerProviderSchema>;
 
@@ -89,13 +91,15 @@ export default function RegisterProviderPage() {
       });
 
       if (!result.success) {
-        throw new Error(result.message || result.error || "Registration failed");
+        throw new Error(
+          result.message || result.error || "Registration failed"
+        );
       }
 
       toast.success(
         "Registration successful! Please wait for admin approval to log in."
       );
-      router.push("/");
+      router.push("/auth/login");
     } catch (error: any) {
       toast.error(error.message);
     }
@@ -173,7 +177,10 @@ export default function RegisterProviderPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Address</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select your location" />
@@ -258,7 +265,9 @@ export default function RegisterProviderPage() {
                         variant="ghost"
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                       >
                         {showConfirmPassword ? (
                           <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -280,7 +289,7 @@ export default function RegisterProviderPage() {
 
         <div className="text-center text-sm">
           Already have an account?{" "}
-          <Link href="/auth" className="underline hover:text-primary">
+          <Link href="/auth/login" className="underline hover:text-primary">
             Log in
           </Link>
         </div>
