@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { authService } from "@/services/auth.service";
@@ -28,10 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Shield, Lock } from "lucide-react";
 
 const adminLoginSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email is required")
-    .email("Invalid email address"),
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -41,7 +38,7 @@ export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { login, user, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  
+
   const form = useForm<AdminLoginFormValues>({
     resolver: zodResolver(adminLoginSchema),
     defaultValues: {
@@ -50,10 +47,20 @@ export default function AdminLoginPage() {
     },
   });
 
-  // Redirect if already logged in as admin
-  if (!authLoading && user?.role === "admin") {
-    router.push("/workbond/admin/dashboard");
-    return null;
+  // Redirect if already logged in as admin - must be in useEffect to avoid render-time navigation
+  useEffect(() => {
+    if (!authLoading && user?.role === "admin") {
+      router.push("/workbond/admin/dashboard");
+    }
+  }, [authLoading, user, router]);
+
+  // Show loading state while checking auth or redirecting
+  if (authLoading || user?.role === "admin") {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
   }
 
   const onSubmit = async (data: AdminLoginFormValues) => {
@@ -93,7 +100,7 @@ export default function AdminLoginPage() {
 
       // Login and redirect
       await login(token, result.data.user);
-      
+
       // Redirect to admin dashboard
       router.push("/workbond/admin/dashboard");
     } catch (error: any) {
@@ -218,4 +225,3 @@ export default function AdminLoginPage() {
     </div>
   );
 }
-
