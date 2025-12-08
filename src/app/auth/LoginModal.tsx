@@ -42,7 +42,7 @@ const loginSchema = z.object({
       message: "invalid email address",
     }),
   password: z.string().min(1, "Password is required"),
-  role: z.enum(["customer", "provider", "admin"]),
+  role: z.enum(["customer", "provider"]),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -132,7 +132,6 @@ export function LoginModal({
                     <SelectContent>
                       <SelectItem value="customer">Customer</SelectItem>
                       <SelectItem value="provider">Provider</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

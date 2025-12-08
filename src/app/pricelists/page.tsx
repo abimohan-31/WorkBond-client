@@ -29,23 +29,29 @@ export default function PublicPriceListsPage() {
   };
 
   const formatPrice = (item: any) => {
-    if (item.price_type === "fixed") return `$${item.fixed_price} fixed`;
-    if (item.price_type === "per_unit") return `$${item.unit_price}/${item.unit}`;
-    if (item.price_type === "range") return `$${item.min_price} - $${item.max_price}`;
+    if (item.price_type === "fixed") return `LKR${item.fixed_price} fixed`;
+    if (item.price_type === "per_unit")
+      return `LKR${item.unit_price}/${item.unit}`;
+    if (item.price_type === "range")
+      return `LKR${item.min_price} - LKR${item.max_price}`;
     return "Price not available";
   };
 
   const filteredList = list.filter((item) => {
-    const serviceName = typeof item.service_id === 'object' ? item.service_id?.name : "";
-    const matchesSearch = serviceName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPriceType = priceTypeFilter === "all" || item.price_type === priceTypeFilter;
+    const serviceName =
+      typeof item.service_id === "object" ? item.service_id?.name : "";
+    const matchesSearch = serviceName
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesPriceType =
+      priceTypeFilter === "all" || item.price_type === priceTypeFilter;
     return matchesSearch && matchesPriceType && item.isActive;
   });
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold text-center mb-8">Service Pricing</h1>
-      
+
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <Input
           type="text"
@@ -82,14 +88,16 @@ export default function PublicPriceListsPage() {
                 <CardTitle className="flex items-center justify-between">
                   <span>{item.service_id?.name || "Service"}</span>
                   <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                    {item.price_type.replace('_', ' ')}
+                    {item.price_type.replace("_", " ")}
                   </span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="mb-4">
                   <p className="text-sm text-gray-500 mb-1">Category</p>
-                  <p className="text-sm font-medium">{item.service_id?.category || "N/A"}</p>
+                  <p className="text-sm font-medium">
+                    {item.service_id?.category || "N/A"}
+                  </p>
                 </div>
                 <div className="border-t pt-4">
                   <p className="text-sm text-gray-500 mb-1">Price</p>
@@ -99,7 +107,9 @@ export default function PublicPriceListsPage() {
                 </div>
                 {item.description && (
                   <div className="mt-4 pt-4 border-t">
-                    <p className="text-sm text-muted-foreground">{item.description}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {item.description}
+                    </p>
                   </div>
                 )}
               </CardContent>

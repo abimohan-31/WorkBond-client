@@ -32,41 +32,41 @@ export function Sidebar({ role }: SidebarProps) {
     // Admin Items
     {
       label: "Dashboard",
-      href: "/admin/dashboard",
+      href: "/workbond/admin/dashboard",
       icon: LayoutDashboard,
       show: permissions.isAdmin,
     },
     {
       label: "Providers",
-      href: "/admin/providers",
+      href: "/workbond/admin/providers",
       icon: Briefcase,
       show: permissions.canManageProviders,
     },
     {
       label: "Customers",
-      href: "/admin/customers",
+      href: "/workbond/admin/customers",
       icon: Users,
       show: permissions.canManageCustomers,
     },
     {
       label: "Services",
-      href: "/admin/services",
+      href: "/workbond/admin/services",
       icon: CheckSquare,
       show: permissions.canManageServices,
     },
     {
       label: "Subscriptions",
-      href: "/admin/subscriptions",
+      href: "/workbond/admin/subscriptions",
       icon: CreditCard,
       show: permissions.canManageSubscriptions,
     },
     {
       label: "Price Lists",
-      href: "/admin/pricelists",
+      href: "/workbond/admin/pricelists",
       icon: DollarSign,
       show: permissions.canManagePriceLists,
     },
-    
+
     // Customer Items
     {
       label: "Dashboard",
@@ -122,13 +122,13 @@ export function Sidebar({ role }: SidebarProps) {
     // Shared / Common
     {
       label: "Profile",
-      href: `/${role}/profile`,
+      href: role === "admin" ? `/workbond/${role}/profile` : `/${role}/profile`,
       icon: User,
       show: true, // Everyone has a profile
     },
     {
       label: "Settings",
-      href: "/admin/settings", // Only admin has settings page for now
+      href: "/workbond/admin/settings", // Only admin has settings page for now
       icon: Settings,
       show: permissions.isAdmin,
     },

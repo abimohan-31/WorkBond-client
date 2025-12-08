@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Redirect based on role
     if (userData.role === "admin") {
-      router.push("/admin/dashboard");
+      router.push("/workbond/admin/dashboard");
     } else if (userData.role === "provider") {
       if (userData.isApproved) {
         router.push("/provider/dashboard");
