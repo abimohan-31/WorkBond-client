@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import CloudinaryImageUpload from "@/components/CloudinaryImageUpload";
 
 export default function CustomerProfilePage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -27,6 +28,7 @@ export default function CustomerProfilePage() {
   const handleUpdate = async () => {
     try {
       await customerService.updateProfile(profile);
+      await refreshUser(); // Refresh auth context to update avatar in topbar
       toast.success("Profile updated");
       setIsEditing(false);
     } catch (err) {
@@ -40,6 +42,15 @@ export default function CustomerProfilePage() {
     <div className="p-6 max-w-2xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">My Profile</h1>
       <div className="space-y-4 p-6 border rounded-lg bg-card">
+        
+        <div className="flex justify-center mb-6">
+          <CloudinaryImageUpload
+            currentImageUrl={profile.profileImage}
+            onUploadSuccess={(url) => setProfile({ ...profile, profileImage: url })}
+            disabled={!isEditing}
+          />
+        </div>
+
         <div className="grid gap-2">
             <label className="text-sm font-medium">Name</label>
             <Input disabled={!isEditing} value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} />

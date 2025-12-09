@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { Sidebar } from "@/components/Sidebar";
+import CustomerTopbarLayout from "@/components/CustomerTopbarLayout";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -31,12 +31,5 @@ export default function CustomerLayout({
     return null;
   }
 
-  return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar role="customer" />
-      <main className="flex-1 p-8">
-        {children}
-      </main>
-    </div>
-  );
+  return <CustomerTopbarLayout>{children}</CustomerTopbarLayout>;
 }

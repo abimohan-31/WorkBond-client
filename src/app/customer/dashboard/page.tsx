@@ -65,7 +65,7 @@ export default function CustomerDashboard() {
 
       const jobPostsData = jobPostsRes.data || [];
       const reviewsData = reviewsRes.data || [];
-      
+
       setStats({
         jobPosts: Array.isArray(jobPostsData) ? jobPostsData.length : 0,
         reviews: Array.isArray(reviewsData) ? reviewsData.length : 0,
@@ -90,7 +90,7 @@ export default function CustomerDashboard() {
           try {
             const providersRes = await serviceService.getProviders(service._id);
             const providers = providersRes.data?.providers || [];
-            
+
             return {
               ...service,
               providers: providers.map((p: any) => ({
@@ -131,13 +131,15 @@ export default function CustomerDashboard() {
   return (
     <>
       <div className="flex items-center gap-4 mb-8">
-        {/* <Avatar className="h-16 w-16">
+        <Avatar className="h-16 w-16">
           <AvatarImage
-            src={stats.profileImage || user.profileImage }
+            src={stats.profileImage || user.profileImage}
             alt={user.name}
           />
-          <AvatarFallback className="text-xl">{user.name.charAt(0)}</AvatarFallback>
-        </Avatar> */}
+          <AvatarFallback className="text-xl">
+            {user.name.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
         <div>
           <h1 className="text-3xl font-bold">Welcome back, {user.name}</h1>
           <p className="text-muted-foreground">{user.email}</p>
@@ -150,9 +152,13 @@ export default function CustomerDashboard() {
             <CardTitle>Job Posts</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{loading ? "..." : stats.jobPosts}</p>
+            <p className="text-2xl font-bold">
+              {loading ? "..." : stats.jobPosts}
+            </p>
             <Link href="/customer/job-posts">
-              <Button variant="link" className="px-0">View all →</Button>
+              <Button variant="link" className="px-0">
+                View all →
+              </Button>
             </Link>
           </CardContent>
         </Card>
@@ -161,103 +167,16 @@ export default function CustomerDashboard() {
             <CardTitle>My Reviews</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{loading ? "..." : stats.reviews}</p>
+            <p className="text-2xl font-bold">
+              {loading ? "..." : stats.reviews}
+            </p>
             <Link href="/customer/reviews">
-              <Button variant="link" className="px-0">View all →</Button>
+              <Button variant="link" className="px-0">
+                View all →
+              </Button>
             </Link>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Available Services</h2>
-        </div>
-
-        {servicesLoading ? (
-          <div className="text-center py-8">Loading services...</div>
-        ) : servicesList.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-8">
-              <p className="text-muted-foreground">No services available</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            {servicesList.map((service) => (
-              <Card key={service._id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-xl capitalize">{service.name}</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">{service.category}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-secondary">
-                        LKR {service.base_price}/{service.unit}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">{service.description}</p>
-                </CardHeader>
-                <CardContent>
-                  {service.providers.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No providers available for this service</p>
-                  ) : (
-                    <div>
-                      <p className="text-sm font-medium mb-3">
-                        Available Providers ({service.providers.length})
-                      </p>
-                      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                        {service.providers.map((provider) => (
-                          <Card key={provider._id} className="border">
-                            <CardContent className="p-4">
-                              <div className="flex items-start gap-3">
-                                <Avatar className="h-10 w-10">
-                                  <AvatarImage
-                                    src={provider.profileImage }
-                                    alt={provider.name}
-                                  />
-                                  <AvatarFallback>{provider.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-semibold text-sm truncate">{provider.name}</p>
-                                  <p className="text-xs text-muted-foreground">{provider.phone}</p>
-                                  <p className="text-xs text-muted-foreground truncate">{provider.email}</p>
-                                  {provider.address && (
-                                    <p className="text-xs text-muted-foreground truncate mt-1">
-                                      {provider.address}
-                                    </p>
-                                  )}
-                                  <div className="flex items-center gap-2 mt-2">
-                                    <span className="text-xs text-muted-foreground">
-                                      {provider.experience_years} years exp.
-                                    </span>
-                                    {provider.rating > 0 && (
-                                      <span className="text-xs text-warning">
-                                        ⭐ {provider.rating.toFixed(1)}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="mt-2">
-                                    <StatusBadge 
-                                      status={provider.availability_status === "Available" ? "active" : "inactive"} 
-                                      className="text-xs px-2 py-1"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -270,7 +189,9 @@ export default function CustomerDashboard() {
               <Button className="w-full">Post a New Job</Button>
             </Link>
             <Link href="/customer/reviews">
-              <Button variant="outline" className="w-full">Write a Review</Button>
+              <Button variant="outline" className="w-full">
+                Write a Review
+              </Button>
             </Link>
           </CardContent>
         </Card>
