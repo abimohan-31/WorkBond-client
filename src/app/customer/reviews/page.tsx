@@ -18,6 +18,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Review {
   _id: string;
@@ -124,18 +131,21 @@ export default function CustomerReviewsPage() {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Provider *</label>
-                <select
-                  className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
+                <Select
                   value={newReview.provider_id}
-                  onChange={(e) => setNewReview({ ...newReview, provider_id: e.target.value })}
+                  onValueChange={(value) => setNewReview({ ...newReview, provider_id: value })}
                 >
-                  <option value="">Select a provider</option>
-                  {providers.map((provider) => (
-                    <option key={provider._id} value={provider._id}>
-                      {provider.name} - {provider.skills.join(", ")}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a provider" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {providers.map((provider) => (
+                      <SelectItem key={provider._id} value={provider._id}>
+                        {provider.name} - {provider.skills.join(", ")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <label className="text-sm font-medium">Rating * ({newReview.rating}/5)</label>

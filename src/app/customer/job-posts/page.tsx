@@ -35,6 +35,8 @@ export default function CustomerJobPostsPage() {
     service_id: "",
     location: "",
   });
+  const [selectedApplication, setSelectedApplication] = useState<any>(null);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (user && user.role === "customer") {
@@ -373,23 +375,35 @@ export default function CustomerJobPostsPage() {
                               Status: <span className="capitalize">{app.status}</span>
                             </p>
                           </div>
-                          {app.status === "applied" && app._id && (
-                            <div className="space-x-2">
-                              <Button
-                                size="sm"
-                                onClick={() => app._id && handleApproveApplication(job._id, app._id)}
-                              >
-                                Approve
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => app._id && handleRejectApplication(job._id, app._id)}
-                              >
-                                Reject
-                              </Button>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedApplication(app);
+                                setIsDetailsDialogOpen(true);
+                              }}
+                            >
+                              View Details
+                            </Button>
+                            {app.status === "applied" && app._id && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  onClick={() => app._id && handleApproveApplication(job._id, app._id)}
+                                >
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => app._id && handleRejectApplication(job._id, app._id)}
+                                >
+                                  Reject
+                                </Button>
+                              </>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -400,6 +414,41 @@ export default function CustomerJobPostsPage() {
           ))}
         </div>
       )}
+
+      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Provider Details</DialogTitle>
+          </DialogHeader>
+          {selectedApplication && selectedApplication.providerId && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Name</label>
+                <p className="text-foreground">{(selectedApplication.providerId as any).name}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Email</label>
+                <p className="text-foreground">{(selectedApplication.providerId as any).email}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Phone</label>
+                <p className="text-foreground">{(selectedApplication.providerId as any).phone}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Address</label>
+                <p className="text-foreground">{(selectedApplication.providerId as any).address}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Availability</label>
+                <p className="text-foreground">{(selectedApplication.providerId as any).availability_status}</p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setIsDetailsDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
