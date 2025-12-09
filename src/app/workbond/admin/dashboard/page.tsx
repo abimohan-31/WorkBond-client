@@ -3,38 +3,24 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { adminService } from "@/services/admin.service";
-import { ProviderType } from "@/types/provider";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Users, Briefcase, Settings, CreditCard, Star, UserCheck } from "lucide-react";
+import Link from "next/link";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const [pendingProviders, setPendingProviders] = useState<ProviderType[]>([]);
+  const [stats, setStats] = useState({
+    pendingProviders: 0,
+    activeProviders: 0,
+    customers: 0,
+    services: 0,
+    subscriptions: 0,
+    reviews: 0
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [openDialogs, setOpenDialogs] = useState<{ [key: string]: boolean }>(
-    {}
-  );
 
   useEffect(() => {
     fetchData();
@@ -43,16 +29,24 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      // Only fetch pending providers for dashboard - customers and providers should be loaded on their dedicated pages
+      // In a real app, you'd have a dedicated stats endpoint. 
+      // For now, we'll fetch lists and count them, or use existing endpoints.
+      // This is a placeholder for the actual counts logic.
       const pendingRes = await adminService.getPendingProviders();
-      setPendingProviders(pendingRes.data?.providers || []);
+      // const providersRes = await adminService.getProviders(); // Assuming this exists
+      // const customersRes = await adminService.getCustomers(); // Assuming this exists
+      
+      setStats({
+        pendingProviders: pendingRes.data?.providers?.length || 0,
+        activeProviders: 0, // Placeholder
+        customers: 0, // Placeholder
+        services: 0, // Placeholder
+        subscriptions: 0, // Placeholder
+        reviews: 0 // Placeholder
+      });
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to fetch dashboard data"
-      );
+      toast.error("Failed to fetch dashboard stats");
     } finally {
       setIsLoading(false);
     }
@@ -65,40 +59,21 @@ export default function AdminDashboard() {
     toast.success("Data refreshed");
   };
 
-  const handleApprove = async (id: string) => {
-    try {
-      await adminService.approveProvider(id);
-      toast.success("Provider approved successfully");
-      setOpenDialogs({ ...openDialogs, [`approve-${id}`]: false });
-      await fetchData();
-    } catch (error) {
-      console.error("Error approving provider:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Error approving provider"
-      );
-    }
-  };
-
-  const handleReject = async (id: string) => {
-    try {
-      await adminService.rejectProvider(id);
-      toast.success("Provider rejected successfully");
-      setOpenDialogs({ ...openDialogs, [`reject-${id}`]: false });
-      await fetchData();
-    } catch (error) {
-      console.error("Error rejecting provider:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Error rejecting provider"
-      );
-    }
-  };
-
   if (!user || user.role !== "admin") {
     return <div className="p-8">Access Denied</div>;
   }
 
+  const dashboardItems = [
+    { title: "Pending Providers", count: stats.pendingProviders, icon: UserCheck, href: "/workbond/admin/pending-providers", color: "text-orange-500" },
+    { title: "Active Providers", count: stats.activeProviders, icon: Briefcase, href: "/workbond/admin/providers", color: "text-blue-500" },
+    { title: "Customers", count: stats.customers, icon: Users, href: "/workbond/admin/customers", color: "text-green-500" },
+    { title: "Services", count: stats.services, icon: Settings, href: "/workbond/admin/services", color: "text-purple-500" },
+    { title: "Subscriptions", count: stats.subscriptions, icon: CreditCard, href: "/workbond/admin/subscriptions", color: "text-indigo-500" },
+    { title: "Reviews", count: stats.reviews, icon: Star, href: "/workbond/admin/reviews", color: "text-yellow-500" },
+  ];
+
   return (
-    <>
+    <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <Button
@@ -114,143 +89,28 @@ export default function AdminDashboard() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Pending Provider Approvals</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{pendingProviders.length}</div>
-        </CardContent>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-8">Loading...</div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Experience</TableHead>
-                  <TableHead>Skills</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pendingProviders.map((provider) => (
-                  <TableRow key={provider._id}>
-                    <TableCell>{provider.name}</TableCell>
-                    <TableCell>{provider.email}</TableCell>
-                    <TableCell>{provider.phone}</TableCell>
-                    <TableCell>{provider.experience_years} years</TableCell>
-                    <TableCell>{provider.skills.join(", ")}</TableCell>
-                    <TableCell>
-                      {provider.createdAt
-                        ? new Date(provider.createdAt).toLocaleDateString()
-                        : "N/A"}
-                    </TableCell>
-                    <TableCell className="space-x-2">
-                      <Dialog
-                        open={openDialogs[`approve-${provider._id}`]}
-                        onOpenChange={(open) =>
-                          setOpenDialogs({
-                            ...openDialogs,
-                            [`approve-${provider._id}`]: open,
-                          })
-                        }
-                      >
-                        <DialogTrigger asChild>
-                          <Button size="sm" variant="default">
-                            Approve
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Approve Provider</DialogTitle>
-                            <DialogDescription>
-                              Are you sure you want to approve {provider.name}?
-                              They will be able to log in and accept jobs.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <DialogFooter>
-                            <Button
-                              variant="outline"
-                              onClick={() =>
-                                setOpenDialogs({
-                                  ...openDialogs,
-                                  [`approve-${provider._id}`]: false,
-                                })
-                              }
-                            >
-                              Cancel
-                            </Button>
-                            <Button onClick={() => handleApprove(provider._id)}>
-                              Confirm Approval
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-
-                      <Dialog
-                        open={openDialogs[`reject-${provider._id}`]}
-                        onOpenChange={(open) =>
-                          setOpenDialogs({
-                            ...openDialogs,
-                            [`reject-${provider._id}`]: open,
-                          })
-                        }
-                      >
-                        <DialogTrigger asChild>
-                          <Button size="sm" variant="destructive">
-                            Reject
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Reject Provider</DialogTitle>
-                            <DialogDescription>
-                              Are you sure you want to reject {provider.name}?
-                              This will keep their record but mark them as
-                              rejected.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <DialogFooter>
-                            <Button
-                              variant="outline"
-                              onClick={() =>
-                                setOpenDialogs({
-                                  ...openDialogs,
-                                  [`reject-${provider._id}`]: false,
-                                })
-                              }
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              onClick={() => handleReject(provider._id)}
-                            >
-                              Confirm Rejection
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {pendingProviders.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center">
-                      No pending providers
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-    </>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {dashboardItems.map((item) => (
+          <Link key={item.title} href={item.href}>
+            <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {item.title}
+                </CardTitle>
+                <item.icon className={`h-4 w-4 ${item.color}`} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {isLoading ? "..." : item.count}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Click to view details
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }
