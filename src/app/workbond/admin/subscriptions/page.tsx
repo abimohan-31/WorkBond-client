@@ -214,7 +214,7 @@ export default function AdminSubscriptionsPage() {
           {subList.map((sub: any) => (
             <Card key={sub._id}>
               <CardHeader>
-                <CardTitle className="text-foreground">{sub.plan_name} - ${sub.amount}</CardTitle>
+                <CardTitle className="text-foreground">{sub.plan_name} - LKR{sub.amount}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="mb-2 text-sm text-muted-foreground">
