@@ -45,7 +45,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const response = await authService.getCurrentUser(userData.role, userData._id);
+      const response = await authService.getCurrentUser(
+        userData.role,
+        userData._id
+      );
       if (response.success && response.data?.user) {
         const refreshedUserData = response.data.user;
         setUser(refreshedUserData);
@@ -91,10 +94,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (token: string, userData: User) => {
     // Store token in cookie
-    Cookies.set("token", token, { expires: 7 }); // 7 days expiry
+    Cookies.set("token", token, { expires: 7, path: "/" }); // 7 days expiry
+    Cookies.set("user", JSON.stringify(userData), { expires: 7, path: "/" });
+    
+    // Set state immediately
     setUser(userData);
-    Cookies.set("user", JSON.stringify(userData));
-
+    
     toast.success("Logged in successfully");
 
     // Redirect based on role
