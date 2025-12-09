@@ -37,7 +37,7 @@ const registerCustomerSchema = z
       }),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string(),
-    phone: z.string().optional(),
+    phone: z.string().min(10, "Phone number is required"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
