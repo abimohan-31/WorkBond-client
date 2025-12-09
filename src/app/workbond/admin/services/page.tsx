@@ -37,6 +37,7 @@ export default function AdminServicesPage() {
   const { user } = useAuth();
   const [serviceList, setServiceList] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newService, setNewService] = useState({
     name: "",
@@ -44,6 +45,7 @@ export default function AdminServicesPage() {
     category: "Cleaning",
     base_price: 0,
     unit: "hour",
+    icon: "",
   });
 
   useEffect(() => {
@@ -55,17 +57,48 @@ export default function AdminServicesPage() {
   const loadServices = async () => {
     try {
       setLoading(true);
-      // Admin should see all services (active and inactive)
-      // Pass isActive=false to override default filter, or pass empty to get all
       const res = await serviceService.getAll();
-      // API returns: { success: true, data: [services array], pagination }
-      // queryHelper returns data as direct array, not wrapped in { services: [] }
       setServiceList(res.data || []);
     } catch (error: any) {
       console.error("Error loading services:", error);
       toast.error(error.response?.data?.message || "Failed to load services");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "WorkBond");
+      formData.append("cloud_name", process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "");
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.secure_url) {
+        setNewService({ ...newService, icon: data.secure_url });
+        toast.success("Image uploaded successfully");
+      } else {
+        throw new Error("Upload failed");
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Failed to upload image");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -89,6 +122,7 @@ export default function AdminServicesPage() {
         category: "Cleaning",
         base_price: 0,
         unit: "hour",
+        icon: "",
       });
       loadServices();
     } catch (error: any) {
@@ -122,7 +156,7 @@ export default function AdminServicesPage() {
           <DialogTrigger asChild>
             <Button>Add New Service</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Create New Service</DialogTitle>
               <DialogDescription>
@@ -130,33 +164,71 @@ export default function AdminServicesPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-foreground">Service Name *</label>
-                <Input
-                  placeholder="e.g., House Cleaning"
-                  value={newService.name}
-                  onChange={(e) =>
-                    setNewService({ ...newService, name: e.target.value })
-                  }
-                  className="bg-background border-input text-foreground"
-                />
+              <div className="flex gap-4 items-start">
+                <div className="w-1/3">
+                  <label className="text-sm font-medium text-foreground block mb-2">Service Icon</label>
+                  <div className="border-2 border-dashed rounded-lg p-4 text-center hover:bg-muted/50 transition-colors relative">
+                    {newService.icon ? (
+                      <div className="relative aspect-square w-full">
+                        <img 
+                          src={newService.icon} 
+                          alt="Service icon" 
+                          className="w-full h-full object-cover rounded-md"
+                        />
+                        <button
+                          onClick={() => setNewService({ ...newService, icon: "" })}
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 w-6 h-6 flex items-center justify-center text-xs"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="py-8">
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {uploading ? "Uploading..." : "Click to upload"}
+                        </p>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          disabled={uploading}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="w-2/3 space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-foreground">Service Name *</label>
+                    <Input
+                      placeholder="e.g., House Cleaning"
+                      value={newService.name}
+                      onChange={(e) =>
+                        setNewService({ ...newService, name: e.target.value })
+                      }
+                      className="bg-background border-input text-foreground"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground">Category *</label>
+                    <select
+                      className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
+                      value={newService.category}
+                      onChange={(e) =>
+                        setNewService({ ...newService, category: e.target.value })
+                      }
+                    >
+                      {categories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">Category *</label>
-                <select
-                  className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
-                  value={newService.category}
-                  onChange={(e) =>
-                    setNewService({ ...newService, category: e.target.value })
-                  }
-                >
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              
               <div>
                 <label className="text-sm font-medium text-foreground">Description *</label>
                 <Textarea
@@ -216,7 +288,9 @@ export default function AdminServicesPage() {
               >
                 Cancel
               </Button>
-              <Button onClick={handleCreate}>Create Service</Button>
+              <Button onClick={handleCreate} disabled={uploading}>
+                {uploading ? "Uploading..." : "Create Service"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -238,20 +312,31 @@ export default function AdminServicesPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {serviceList.map((service) => (
-            <Card key={service._id}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="capitalize text-foreground">{service.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {service.category}
-                    </p>
+            <Card key={service._id} className="overflow-hidden">
+              <div className="aspect-video w-full bg-muted relative">
+                {service.icon ? (
+                  <img 
+                    src={service.icon} 
+                    alt={service.name} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                    No Image
                   </div>
+                )}
+                <div className="absolute top-2 right-2">
                   <StatusBadge status={service.isActive ? "active" : "inactive"} />
                 </div>
+              </div>
+              <CardHeader>
+                <CardTitle className="capitalize text-foreground">{service.name}</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {service.category}
+                </p>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground text-sm mb-3">
+                <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
                   {service.description}
                 </p>
                 <div className="border-t pt-3 mb-3">
