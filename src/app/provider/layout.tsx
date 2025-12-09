@@ -14,8 +14,12 @@ export default function ProviderLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && (!user || user.role !== "provider")) {
-      router.push("/");
+    if (!isLoading) {
+      if (!user) {
+        router.push("/auth/login");
+      } else if (user.role !== "provider") {
+        router.push("/");
+      }
     }
   }, [user, isLoading, router]);
 
