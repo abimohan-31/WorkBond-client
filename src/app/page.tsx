@@ -194,6 +194,19 @@ export default function Home() {
                   key={service._id}
                   className="hover:shadow-lg transition-shadow"
                 >
+                  <div className="aspect-video w-full bg-muted relative">
+                    {service.icon ? (
+                      <img 
+                        src={service.icon} 
+                        alt={service.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                        No Image
+                      </div>
+                    )}
+                  </div>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <span className="capitalize">{service.name}</span>

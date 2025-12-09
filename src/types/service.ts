@@ -17,6 +17,7 @@ export interface CreateServiceData {
   category: string;
   base_price: number;
   unit: string;
+  icon?: string;
 }
 
 export interface UpdateServiceData {
@@ -25,5 +26,6 @@ export interface UpdateServiceData {
   category?: string;
   base_price?: number;
   unit?: string;
+  icon?: string;
 }
 
