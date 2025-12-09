@@ -9,11 +9,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function ProviderJobPostsPage() {
   const { user } = useAuth();
   const [allJobs, setAllJobs] = useState<JobPostType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedJob, setSelectedJob] = useState<JobPostType | null>(null);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (user && user.role === "provider") {
@@ -122,9 +131,20 @@ export default function ProviderJobPostsPage() {
                         Posted by: {typeof job.customerId === 'object' ? job.customerId.name : 'Customer'}
                       </p>
                     </div>
-                    <Button onClick={() => handleApply(job._id)}>
-                      Apply Now
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      <Button onClick={() => handleApply(job._id)}>
+                        Apply Now
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setSelectedJob(job);
+                          setIsDetailsDialogOpen(true);
+                        }}
+                      >
+                        View Customer Details
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -163,7 +183,19 @@ export default function ProviderJobPostsPage() {
                           Posted by: {typeof job.customerId === 'object' ? job.customerId.name : 'Customer'}
                         </p>
                       </div>
-                      <StatusBadge status={status || "pending"} />
+                      <div className="flex flex-col items-end gap-2">
+                        <StatusBadge status={status || "pending"} />
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedJob(job);
+                            setIsDetailsDialogOpen(true);
+                          }}
+                        >
+                          View Customer Details
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -175,6 +207,39 @@ export default function ProviderJobPostsPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Customer Details</DialogTitle>
+          </DialogHeader>
+          {selectedJob && selectedJob.customerId && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Name</label>
+                <p className="text-foreground">
+                  {typeof selectedJob.customerId === 'object' ? selectedJob.customerId.name : 'N/A'}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Email</label>
+                <p className="text-foreground">
+                  {typeof selectedJob.customerId === 'object' ? selectedJob.customerId.email : 'N/A'}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Phone</label>
+                <p className="text-foreground">
+                  {typeof selectedJob.customerId === 'object' ? selectedJob.customerId.phone : 'N/A'}
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setIsDetailsDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

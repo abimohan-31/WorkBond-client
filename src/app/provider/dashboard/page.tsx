@@ -208,17 +208,6 @@ export default function ProviderDashboard() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Total Earnings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">
-              LKR {loading ? "..." : stats.totalEarnings.toFixed(2)}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">Coming soon</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
             <CardTitle>Rating</CardTitle>
           </CardHeader>
           <CardContent>
@@ -325,7 +314,9 @@ export default function ProviderDashboard() {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Approval Status:</span>
-                <StatusBadge status={user.isApproved ? "approved" : "pending"} />
+                <StatusBadge
+                  status={user.isApproved ? "approved" : "pending"}
+                />
               </div>
               {!user.isApproved && (
                 <p className="text-sm text-muted-foreground mt-2">
