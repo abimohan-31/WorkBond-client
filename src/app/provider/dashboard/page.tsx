@@ -26,8 +26,15 @@ export default function ProviderDashboard() {
 
   useEffect(() => {
     if (user && user.role === "provider") {
-      fetchStats();
-      fetchJobPosts();
+      // Only fetch data if provider is approved
+      if (user.isApproved) {
+        fetchStats();
+        fetchJobPosts();
+      } else {
+        // Set loading to false for unapproved providers
+        setLoading(false);
+        setJobsLoading(false);
+      }
     }
   }, [user]);
 
@@ -40,19 +47,25 @@ export default function ProviderDashboard() {
         providerService.getReviews(),
       ]);
 
-      const myApplications = jobsRes.data?.filter((job: JobPostType) =>
-        job.applications?.some((app: any) => {
-          const providerId = typeof app.providerId === 'object' ? app.providerId._id : app.providerId;
-          return providerId === user?._id && app.status === "approved";
-        })
-      ) || [];
+      const myApplications =
+        jobsRes.data?.filter((job: JobPostType) =>
+          job.applications?.some((app: any) => {
+            const providerId =
+              typeof app.providerId === "object"
+                ? app.providerId._id
+                : app.providerId;
+            return providerId === user?._id && app.status === "approved";
+          })
+        ) || [];
 
       const profile = profileRes.data?.provider || profileRes.data;
       const reviews = reviewsRes.data?.reviews || [];
-      
-      const avgRating = reviews.length > 0
-        ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
-        : 0;
+
+      const avgRating =
+        reviews.length > 0
+          ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
+            reviews.length
+          : 0;
 
       const providerData = (profile as any)?.provider || profile;
       setStats({
@@ -63,7 +76,10 @@ export default function ProviderDashboard() {
       });
     } catch (error: any) {
       console.error("Error fetching stats:", error);
-      toast.error("Failed to load dashboard data");
+      // Don't show error toast for approval-related errors
+      if (error.response?.status !== 403) {
+        toast.error("Failed to load dashboard data");
+      }
     } finally {
       setLoading(false);
     }
@@ -77,7 +93,12 @@ export default function ProviderDashboard() {
       setJobPostsList(Array.isArray(jobs) ? jobs.slice(0, 6) : []);
     } catch (error: any) {
       console.error("Error fetching job posts:", error);
-      toast.error(error.response?.data?.message || "Failed to load job posts");
+      // Don't show error toast for approval-related errors
+      if (error.response?.status !== 403) {
+        toast.error(
+          error.response?.data?.message || "Failed to load job posts"
+        );
+      }
     } finally {
       setJobsLoading(false);
     }
@@ -96,13 +117,61 @@ export default function ProviderDashboard() {
 
   const hasApplied = (job: JobPostType) => {
     return job.applications?.some((app: any) => {
-      const providerId = typeof app.providerId === 'object' ? app.providerId._id : app.providerId;
+      const providerId =
+        typeof app.providerId === "object"
+          ? app.providerId._id
+          : app.providerId;
       return providerId === user?._id;
     });
   };
 
   if (!user || user.role !== "provider") {
     return <div className="p-8">Access Denied</div>;
+  }
+
+  // Show pending approval message for unapproved providers
+  if (!user.isApproved) {
+    return (
+      <div className="p-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Account Pending Approval</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold mb-2">
+                  Welcome, {user.name}!
+                </h2>
+                <p className="text-gray-600">
+                  Your provider account is currently pending admin approval.
+                  Once your account is approved, you'll be able to:
+                </p>
+                <ul className="list-disc list-inside mt-4 space-y-2 text-gray-600">
+                  <li>Browse and apply to available job posts</li>
+                  <li>View your application status</li>
+                  <li>Manage your profile and portfolio</li>
+                  <li>Receive job notifications</li>
+                </ul>
+              </div>
+            </div>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <p className="text-sm text-yellow-800">
+                <strong>Status:</strong> Your account is pending approval.
+                You'll receive a notification once an admin reviews and approves
+                your account.
+              </p>
+            </div>
+            <div className="pt-4">
+              <p className="text-sm text-gray-500 mb-2">
+                Once approved, you'll be able to access all provider features
+                including your profile, job applications, and more.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -127,9 +196,13 @@ export default function ProviderDashboard() {
             <CardTitle>Active Jobs</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{loading ? "..." : stats.activeJobs}</p>
+            <p className="text-2xl font-bold">
+              {loading ? "..." : stats.activeJobs}
+            </p>
             <Link href="/provider/job-posts">
-              <Button variant="link" className="px-0">View all →</Button>
+              <Button variant="link" className="px-0">
+                View all →
+              </Button>
             </Link>
           </CardContent>
         </Card>
@@ -138,7 +211,9 @@ export default function ProviderDashboard() {
             <CardTitle>Total Earnings</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">LKR {loading ? "..." : stats.totalEarnings.toFixed(2)}</p>
+            <p className="text-2xl font-bold">
+              LKR {loading ? "..." : stats.totalEarnings.toFixed(2)}
+            </p>
             <p className="text-sm text-gray-500 mt-1">Coming soon</p>
           </CardContent>
         </Card>
@@ -147,9 +222,13 @@ export default function ProviderDashboard() {
             <CardTitle>Rating</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{loading ? "..." : stats.rating.toFixed(1)}</p>
+            <p className="text-2xl font-bold">
+              {loading ? "..." : stats.rating.toFixed(1)}
+            </p>
             <Link href="/provider/reviews">
-              <Button variant="link" className="px-0">View reviews →</Button>
+              <Button variant="link" className="px-0">
+                View reviews →
+              </Button>
             </Link>
           </CardContent>
         </Card>
@@ -178,14 +257,21 @@ export default function ProviderDashboard() {
                 <CardHeader>
                   <CardTitle className="text-lg">{job.title}</CardTitle>
                   <p className="text-sm text-gray-500">
-                    {typeof job.service_id === 'object' ? job.service_id.name : 'Service'}
+                    {typeof job.service_id === "object"
+                      ? job.service_id.name
+                      : "Service"}
                   </p>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">{job.description}</p>
+                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                    {job.description}
+                  </p>
                   <div className="space-y-1 mb-4">
                     <p className="text-xs text-gray-500">
-                      <strong>Customer:</strong> {typeof job.customerId === 'object' ? job.customerId.name : 'N/A'}
+                      <strong>Customer:</strong>{" "}
+                      {typeof job.customerId === "object"
+                        ? job.customerId.name
+                        : "N/A"}
                     </p>
                     {job.location && (
                       <p className="text-xs text-gray-500">
@@ -225,7 +311,9 @@ export default function ProviderDashboard() {
               <Button className="w-full">Browse Available Jobs</Button>
             </Link>
             <Link href="/provider/profile">
-              <Button variant="outline" className="w-full">Update Profile</Button>
+              <Button variant="outline" className="w-full">
+                Update Profile
+              </Button>
             </Link>
           </CardContent>
         </Card>
@@ -237,13 +325,18 @@ export default function ProviderDashboard() {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-gray-600">Approval Status:</span>
-                <span className={`font-semibold ${user.isApproved ? 'text-green-600' : 'text-yellow-600'}`}>
-                  {user.isApproved ? 'Approved' : 'Pending'}
+                <span
+                  className={`font-semibold ${
+                    user.isApproved ? "text-green-600" : "text-yellow-600"
+                  }`}
+                >
+                  {user.isApproved ? "Approved" : "Pending"}
                 </span>
               </div>
               {!user.isApproved && (
                 <p className="text-sm text-gray-500 mt-2">
-                  Your account is pending admin approval. You'll be notified once approved.
+                  Your account is pending admin approval. You'll be notified
+                  once approved.
                 </p>
               )}
             </div>

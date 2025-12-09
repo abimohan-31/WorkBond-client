@@ -14,11 +14,11 @@ export const providerService = {
     return response.data;
   },
   getReviews: async (): Promise<ApiResponse<{ reviews: ReviewType[] }>> => {
-    const response = await apiClient.get("/providers/reviews");
+    const response = await apiClient.get("/reviews");
     return response.data;
   },
   getSubscription: async (): Promise<ApiResponse<{ subscription: SubscriptionType }>> => {
-    const response = await apiClient.get("/providers/subscription");
+    const response = await apiClient.get("/subscription");
     return response.data;
   },
 };

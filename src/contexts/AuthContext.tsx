@@ -10,7 +10,6 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
-import apiClient from "@/lib/apiClient";
 import { User } from "@/types/user";
 import { authService } from "@/services/auth.service";
 
@@ -36,18 +35,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const response = await authService.getCurrentUser();
+      const storedUser = Cookies.get("user");
+      if (!storedUser) {
+        return;
+      }
+
+      const userData = JSON.parse(storedUser);
+      if (!userData?.role || !userData?._id) {
+        return;
+      }
+
+      const response = await authService.getCurrentUser(userData.role, userData._id);
       if (response.success && response.data?.user) {
-        const userData = response.data.user;
-        setUser(userData);
-        Cookies.set("user", JSON.stringify(userData));
+        const refreshedUserData = response.data.user;
+        setUser(refreshedUserData);
+        Cookies.set("user", JSON.stringify(refreshedUserData));
       }
     } catch (error) {
       console.error("Failed to refresh user:", error);
-      // If refresh fails, clear auth state
-      setUser(null);
-      Cookies.remove("user");
-      Cookies.remove("token");
+      // Don't clear auth state on refresh failure - user might still be valid
+      // Only log the error
     }
   };
 
@@ -63,7 +70,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const userData = JSON.parse(storedUser);
           setUser(userData);
           // Optionally verify token is still valid by refreshing user
-          await refreshUser();
+          // Don't await - let it happen in background
+          refreshUser().catch(() => {
+            // Silently fail - user data from cookie is still valid
+          });
         } catch (error) {
           console.error("Failed to parse user data:", error);
           Cookies.remove("user");

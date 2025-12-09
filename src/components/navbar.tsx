@@ -60,7 +60,7 @@ export function Navbar() {
                   className="relative h-8 w-8 rounded-full"
                 >
                   <Avatar className="h-8 w-8">
-                    <AvatarImage  alt={user.name} />
+                    <AvatarImage alt={user.name} />
                     <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -77,12 +77,32 @@ export function Navbar() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href={`/${user.role}/dashboard`}>Dashboard</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href={`/${user.role}/profile`}>Profile</Link>
-                </DropdownMenuItem>
+                {user?.role && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href={
+                          user.role === "admin"
+                            ? "/workbond/admin/dashboard"
+                            : `/${user.role}/dashboard`
+                        }
+                      >
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href={
+                          user.role === "admin"
+                            ? `/workbond/${user.role}/profile`
+                            : `/${user.role}/profile`
+                        }
+                      >
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
