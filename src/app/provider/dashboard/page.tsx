@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { AlertBanner } from "@/components/ui/AlertBanner";
 
 import { JobPostType } from "@/types/jobPost";
 
@@ -143,11 +145,11 @@ export default function ProviderDashboard() {
                 <h2 className="text-xl font-semibold mb-2">
                   Welcome, {user.name}!
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-muted-foreground">
                   Your provider account is currently pending admin approval.
                   Once your account is approved, you'll be able to:
                 </p>
-                <ul className="list-disc list-inside mt-4 space-y-2 text-gray-600">
+                <ul className="list-disc list-inside mt-4 space-y-2 text-muted-foreground">
                   <li>Browse and apply to available job posts</li>
                   <li>View your application status</li>
                   <li>Manage your profile and portfolio</li>
@@ -155,15 +157,13 @@ export default function ProviderDashboard() {
                 </ul>
               </div>
             </div>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p className="text-sm text-yellow-800">
-                <strong>Status:</strong> Your account is pending approval.
-                You'll receive a notification once an admin reviews and approves
-                your account.
-              </p>
-            </div>
+            <AlertBanner
+              type="warning"
+              title="Status: Pending"
+              message="Your account is pending approval. You'll receive a notification once an admin reviews and approves your account."
+            />
             <div className="pt-4">
-              <p className="text-sm text-gray-500 mb-2">
+              <p className="text-sm text-muted-foreground mb-2">
                 Once approved, you'll be able to access all provider features
                 including your profile, job applications, and more.
               </p>
@@ -214,7 +214,7 @@ export default function ProviderDashboard() {
             <p className="text-2xl font-bold">
               LKR {loading ? "..." : stats.totalEarnings.toFixed(2)}
             </p>
-            <p className="text-sm text-gray-500 mt-1">Coming soon</p>
+            <p className="text-sm text-muted-foreground mt-1">Coming soon</p>
           </CardContent>
         </Card>
         <Card>
@@ -247,7 +247,7 @@ export default function ProviderDashboard() {
         ) : jobPostsList.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">
-              <p className="text-gray-600">No job posts available</p>
+              <p className="text-muted-foreground">No job posts available</p>
             </CardContent>
           </Card>
         ) : (
@@ -256,29 +256,29 @@ export default function ProviderDashboard() {
               <Card key={job._id}>
                 <CardHeader>
                   <CardTitle className="text-lg">{job.title}</CardTitle>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     {typeof job.service_id === "object"
                       ? job.service_id.name
                       : "Service"}
                   </p>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                  <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                     {job.description}
                   </p>
                   <div className="space-y-1 mb-4">
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       <strong>Customer:</strong>{" "}
                       {typeof job.customerId === "object"
                         ? job.customerId.name
                         : "N/A"}
                     </p>
                     {job.location && (
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         <strong>Location:</strong> {job.location}
                       </p>
                     )}
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       <strong>Duration:</strong> {job.duration}
                     </p>
                   </div>
@@ -324,17 +324,11 @@ export default function ProviderDashboard() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-gray-600">Approval Status:</span>
-                <span
-                  className={`font-semibold ${
-                    user.isApproved ? "text-green-600" : "text-yellow-600"
-                  }`}
-                >
-                  {user.isApproved ? "Approved" : "Pending"}
-                </span>
+                <span className="text-muted-foreground">Approval Status:</span>
+                <StatusBadge status={user.isApproved ? "approved" : "pending"} />
               </div>
               {!user.isApproved && (
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-muted-foreground mt-2">
                   Your account is pending admin approval. You'll be notified
                   once approved.
                 </p>

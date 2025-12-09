@@ -125,7 +125,7 @@ export default function CustomerReviewsPage() {
               <div>
                 <label className="text-sm font-medium">Provider *</label>
                 <select
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
                   value={newReview.provider_id}
                   onChange={(e) => setNewReview({ ...newReview, provider_id: e.target.value })}
                 >
@@ -147,7 +147,7 @@ export default function CustomerReviewsPage() {
                   onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
                   className="w-full"
                 />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
                   <span>Poor</span>
                   <span>Excellent</span>
                 </div>
@@ -174,12 +174,12 @@ export default function CustomerReviewsPage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <p className="text-gray-600">Loading reviewService...</p>
+          <p className="text-muted-foreground">Loading reviews...</p>
         </div>
       ) : reviewList.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
-            <p className="text-gray-600 mb-4">You haven't written any reviews yet</p>
+            <p className="text-muted-foreground mb-4">You haven't written any reviews yet</p>
             <Button onClick={() => setIsCreateDialogOpen(true)}>Write Your First Review</Button>
           </CardContent>
         </Card>
@@ -192,11 +192,11 @@ export default function CustomerReviewsPage() {
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <span>Rating: {review.rating}/5</span>
-                      <span className="text-yellow-500">
+                      <span className="text-warning">
                         {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
                       </span>
                     </CardTitle>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       Provider: {typeof review.provider_id === 'object' ? review.provider_id.name : 'Provider'}
                     </p>
                   </div>
@@ -206,8 +206,8 @@ export default function CustomerReviewsPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700">{review.comment}</p>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-foreground">{review.comment}</p>
+                <p className="text-sm text-muted-foreground mt-2">
                   Posted on{" "}
                   {review.review_date
                     ? new Date(review.review_date).toLocaleDateString()

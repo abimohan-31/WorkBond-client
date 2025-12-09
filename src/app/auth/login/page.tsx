@@ -88,11 +88,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md border-border bg-card text-card-foreground">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-2xl font-bold text-center text-foreground">Login</CardTitle>
+          <CardDescription className="text-center text-muted-foreground">
             Enter your credentials to access your account
           </CardDescription>
         </CardHeader>
@@ -104,17 +104,17 @@ export default function LoginPage() {
                 name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>I am a...</FormLabel>
+                    <FormLabel className="text-foreground">I am a...</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-background border-input text-foreground">
                           <SelectValue placeholder="Select your role" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-popover text-popover-foreground border-border">
                         <SelectItem value="customer">Customer</SelectItem>
                         <SelectItem value="provider">Provider</SelectItem>
                       </SelectContent>
@@ -128,9 +128,9 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-foreground">Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="name@example.com" {...field} />
+                      <Input placeholder="name@example.com" {...field} className="bg-background border-input text-foreground" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -141,9 +141,9 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className="text-foreground">Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="******" {...field} />
+                      <Input type="password" placeholder="******" {...field} className="bg-background border-input text-foreground" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

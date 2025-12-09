@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 export default function ProviderJobPostsPage() {
   const { user } = useAuth();
@@ -75,8 +76,8 @@ export default function ProviderJobPostsPage() {
       <div className="p-8">
         <Card>
           <CardContent className="text-center py-12">
-            <h2 className="text-2xl font-bold mb-4">Account Pending Approval</h2>
-            <p className="text-gray-600">
+            <h2 className="text-2xl font-bold mb-4 text-foreground">Account Pending Approval</h2>
+            <p className="text-muted-foreground">
               Your provider account is pending admin approval. You'll be able to browse and apply to jobs once your account is approved.
             </p>
           </CardContent>
@@ -87,7 +88,7 @@ export default function ProviderJobPostsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Job Posts</h1>
+      <h1 className="text-3xl font-bold text-foreground">Job Posts</h1>
 
       <Tabs defaultValue="available" className="w-full">
         <TabsList>
@@ -98,12 +99,12 @@ export default function ProviderJobPostsPage() {
         <TabsContent value="available" className="space-y-4 mt-6">
           {loading ? (
             <div className="text-center py-12">
-              <p className="text-gray-600">Loading jobs...</p>
+              <p className="text-muted-foreground">Loading jobs...</p>
             </div>
           ) : availableJobs.length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
-                <p className="text-gray-600">No available jobs at the moment</p>
+                <p className="text-muted-foreground">No available jobs at the moment</p>
               </CardContent>
             </Card>
           ) : (
@@ -112,12 +113,12 @@ export default function ProviderJobPostsPage() {
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle>{job.title}</CardTitle>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <CardTitle className="text-foreground">{job.title}</CardTitle>
+                      <p className="text-sm text-muted-foreground mt-1">
                         {typeof job.service_id === 'object' ? job.service_id.name : 'Service'} • {job.duration}
                         {job.location && ` • ${job.location}`}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         Posted by: {typeof job.customerId === 'object' ? job.customerId.name : 'Customer'}
                       </p>
                     </div>
@@ -127,7 +128,7 @@ export default function ProviderJobPostsPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-700">{job.description}</p>
+                  <p className="text-foreground">{job.description}</p>
                 </CardContent>
               </Card>
             ))
@@ -137,12 +138,12 @@ export default function ProviderJobPostsPage() {
         <TabsContent value="my-applications" className="space-y-4 mt-6">
           {loading ? (
             <div className="text-center py-12">
-              <p className="text-gray-600">Loading applications...</p>
+              <p className="text-muted-foreground">Loading applications...</p>
             </div>
           ) : myApplications.length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
-                <p className="text-gray-600">You haven't applied to any jobs yet</p>
+                <p className="text-muted-foreground">You haven't applied to any jobs yet</p>
               </CardContent>
             </Card>
           ) : (
@@ -153,30 +154,20 @@ export default function ProviderJobPostsPage() {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle>{job.title}</CardTitle>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <CardTitle className="text-foreground">{job.title}</CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">
                           {typeof job.service_id === 'object' ? job.service_id.name : 'Service'} • {job.duration}
                           {job.location && ` • ${job.location}`}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                           Posted by: {typeof job.customerId === 'object' ? job.customerId.name : 'Customer'}
                         </p>
                       </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          status === "approved"
-                            ? "bg-green-100 text-green-800"
-                            : status === "rejected"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'}
-                      </span>
+                      <StatusBadge status={status || "pending"} />
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-700">{job.description}</p>
+                    <p className="text-foreground">{job.description}</p>
                   </CardContent>
                 </Card>
               );

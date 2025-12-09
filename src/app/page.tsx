@@ -7,6 +7,7 @@ import { Select } from "@/components/ui/select";
 import { serviceService } from "@/services/service.service";
 import { priceListService } from "@/services/priceList.service";
 import { toast } from "sonner";
+import { HeroSection } from "@/components/ui/HeroSection";
 
 interface Service {
   _id: string;
@@ -143,32 +144,24 @@ export default function Home() {
 
   return (
     <main className="pt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-12">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            Welcome to{" "}
-            <span className="text-transparent">
-              <span className="text-[#061D4E]">Work</span>
-              <span className="text-[#F35C27]">Bond</span>
-            </span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 leading-relaxed max-w-3xl">
-            Connecting talented professionals with forward-thinking companies.
-            WorkBond bridges the gap between exceptional talent and meaningful
-            opportunities, creating lasting professional relationships that
-            drive success.
-          </p>
-        </div>
+      <HeroSection
+        title="Welcome to WorkBond"
+        subtitle="Connecting talented professionals with forward-thinking companies. WorkBond bridges the gap between exceptional talent and meaningful opportunities, creating lasting professional relationships that drive success."
+        primaryAction={{ label: "Get Started", href: "/auth/register" }}
+        secondaryAction={{ label: "Learn More", href: "#services" }}
+        className="mb-12"
+      />
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" id="services">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">
+          <h2 className="text-3xl font-bold text-foreground mb-6">
             Our Services
           </h2>
 
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <Input
               type="text"
-              placeholder="Search serviceService..."
+              placeholder="Search services..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="md:w-1/2"
@@ -176,7 +169,7 @@ export default function Home() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border rounded-md md:w-1/4"
+              className="px-4 py-2 border rounded-md md:w-1/4 bg-background text-foreground border-input"
             >
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
@@ -188,11 +181,11 @@ export default function Home() {
 
           {loading ? (
             <div className="text-center py-12">
-              <p className="text-gray-600">Loading serviceService...</p>
+              <p className="text-muted-foreground">Loading services...</p>
             </div>
           ) : filteredServices.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-600">No services found</p>
+              <p className="text-muted-foreground">No services found</p>
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -204,16 +197,16 @@ export default function Home() {
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <span className="capitalize">{service.name}</span>
-                      <span className="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                      <span className="text-sm font-normal text-muted-foreground bg-muted px-2 py-1 rounded">
                         {service.category}
                       </span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 mb-4">{service.description}</p>
+                    <p className="text-muted-foreground mb-4">{service.description}</p>
                     <div className="border-t pt-4">
-                      <p className="text-sm text-gray-500 mb-1">Pricing</p>
-                      <p className="text-2xl font-bold text-[#061D4E]">
+                      <p className="text-sm text-muted-foreground mb-1">Pricing</p>
+                      <p className="text-2xl font-bold text-secondary">
                         {getPriceDisplay(service)}
                       </p>
                     </div>
@@ -226,7 +219,7 @@ export default function Home() {
 
         {/* Price Lists Section */}
         <div className="mt-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">
+          <h2 className="text-3xl font-bold text-foreground mb-6">
             Service Pricing
           </h2>
 
@@ -241,7 +234,7 @@ export default function Home() {
             <select
               value={priceTypeFilter}
               onChange={(e) => setPriceTypeFilter(e.target.value)}
-              className="px-4 py-2 border rounded-md md:w-1/4"
+              className="px-4 py-2 border rounded-md md:w-1/4 bg-background text-foreground border-input"
             >
               <option value="all">All Price Types</option>
               <option value="fixed">Fixed Price</option>
@@ -252,11 +245,11 @@ export default function Home() {
 
           {loading ? (
             <div className="text-center py-12">
-              <p className="text-gray-600">Loading price lists...</p>
+              <p className="text-muted-foreground">Loading price lists...</p>
             </div>
           ) : filteredPriceLists.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-600">No price lists found</p>
+              <p className="text-muted-foreground">No price lists found</p>
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -276,27 +269,27 @@ export default function Home() {
                         <span className="capitalize">
                           {service?.name || "Service"}
                         </span>
-                        <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                        <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded">
                           {priceList.price_type.replace("_", " ")}
                         </span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="mb-4">
-                        <p className="text-sm text-gray-500 mb-1">Category</p>
+                        <p className="text-sm text-muted-foreground mb-1">Category</p>
                         <p className="text-sm font-medium">
                           {service?.category || "N/A"}
                         </p>
                       </div>
                       <div className="border-t pt-4">
-                        <p className="text-sm text-gray-500 mb-1">Price</p>
-                        <p className="text-2xl font-bold text-[#061D4E]">
+                        <p className="text-sm text-muted-foreground mb-1">Price</p>
+                        <p className="text-2xl font-bold text-secondary">
                           {formatPriceListPrice(priceList)}
                         </p>
                       </div>
                       {priceList.description && (
                         <div className="mt-4 pt-4 border-t">
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-muted-foreground">
                             {priceList.description}
                           </p>
                         </div>

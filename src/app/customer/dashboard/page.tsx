@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 interface Provider {
   _id: string;
@@ -174,11 +175,11 @@ export default function CustomerDashboard() {
         </div>
 
         {servicesLoading ? (
-          <div className="text-center py-8">Loading serviceService...</div>
+          <div className="text-center py-8">Loading services...</div>
         ) : servicesList.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">
-              <p className="text-gray-600">No services available</p>
+              <p className="text-muted-foreground">No services available</p>
             </CardContent>
           </Card>
         ) : (
@@ -189,19 +190,19 @@ export default function CustomerDashboard() {
                   <div className="flex justify-between items-start">
                     <div>
                       <CardTitle className="text-xl capitalize">{service.name}</CardTitle>
-                      <p className="text-sm text-gray-500 mt-1">{service.category}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{service.category}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-[#061D4E]">
+                      <p className="text-lg font-bold text-secondary">
                         LKR {service.base_price}/{service.unit}
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600 mt-2">{service.description}</p>
+                  <p className="text-sm text-muted-foreground mt-2">{service.description}</p>
                 </CardHeader>
                 <CardContent>
                   {service.providers.length === 0 ? (
-                    <p className="text-sm text-gray-500">No providers available for this service</p>
+                    <p className="text-sm text-muted-foreground">No providers available for this service</p>
                   ) : (
                     <div>
                       <p className="text-sm font-medium mb-3">
@@ -221,33 +222,28 @@ export default function CustomerDashboard() {
                                 </Avatar>
                                 <div className="flex-1 min-w-0">
                                   <p className="font-semibold text-sm truncate">{provider.name}</p>
-                                  <p className="text-xs text-gray-500">{provider.phone}</p>
-                                  <p className="text-xs text-gray-500 truncate">{provider.email}</p>
+                                  <p className="text-xs text-muted-foreground">{provider.phone}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{provider.email}</p>
                                   {provider.address && (
-                                    <p className="text-xs text-gray-500 truncate mt-1">
+                                    <p className="text-xs text-muted-foreground truncate mt-1">
                                       {provider.address}
                                     </p>
                                   )}
                                   <div className="flex items-center gap-2 mt-2">
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-xs text-muted-foreground">
                                       {provider.experience_years} years exp.
                                     </span>
                                     {provider.rating > 0 && (
-                                      <span className="text-xs text-yellow-600">
+                                      <span className="text-xs text-warning">
                                         ⭐ {provider.rating.toFixed(1)}
                                       </span>
                                     )}
                                   </div>
                                   <div className="mt-2">
-                                    <span
-                                      className={`text-xs px-2 py-1 rounded ${
-                                        provider.availability_status === "Available"
-                                          ? "bg-green-100 text-green-800"
-                                          : "bg-gray-100 text-gray-800"
-                                      }`}
-                                    >
-                                      {provider.availability_status}
-                                    </span>
+                                    <StatusBadge 
+                                      status={provider.availability_status === "Available" ? "active" : "inactive"} 
+                                      className="text-xs px-2 py-1"
+                                    />
                                   </div>
                                 </div>
                               </div>

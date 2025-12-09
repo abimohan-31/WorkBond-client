@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/usePermissions";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 export default function AdminSubscriptionsPage() {
   const { user } = useAuth();
@@ -107,18 +108,18 @@ export default function AdminSubscriptionsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Manage Subscriptions</h1>
+      <h1 className="text-3xl font-bold text-foreground">Manage Subscriptions</h1>
       
       <Card>
         <CardHeader>
-          <CardTitle>Create New Subscription</CardTitle>
+          <CardTitle className="text-foreground">Create New Subscription</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Provider *</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">Provider *</label>
               <select
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
                 value={newSub.provider_id}
                 onChange={(e) => setNewSub({ ...newSub, provider_id: e.target.value })}
               >
@@ -131,9 +132,9 @@ export default function AdminSubscriptionsPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Plan Name *</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">Plan Name *</label>
               <select
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
                 value={newSub.plan_name}
                 onChange={(e) => setNewSub({ ...newSub, plan_name: e.target.value as "Free" | "Standard" | "Premium" })}
               >
@@ -143,7 +144,7 @@ export default function AdminSubscriptionsPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Amount (LKR) *</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">Amount (LKR) *</label>
               <Input 
                 type="number" 
                 min="0" 
@@ -151,36 +152,40 @@ export default function AdminSubscriptionsPage() {
                 placeholder="0.00" 
                 value={newSub.amount} 
                 onChange={(e) => setNewSub({ ...newSub, amount: e.target.value })} 
+                className="bg-background border-input text-foreground"
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Start Date</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">Start Date</label>
               <Input 
                 type="date" 
                 value={newSub.start_date} 
                 onChange={(e) => setNewSub({ ...newSub, start_date: e.target.value })} 
+                className="bg-background border-input text-foreground"
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">End Date *</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">End Date *</label>
               <Input 
                 type="date" 
                 value={newSub.end_date} 
                 onChange={(e) => setNewSub({ ...newSub, end_date: e.target.value })} 
+                className="bg-background border-input text-foreground"
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Renewal Date</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">Renewal Date</label>
               <Input 
                 type="date" 
                 value={newSub.renewal_date} 
                 onChange={(e) => setNewSub({ ...newSub, renewal_date: e.target.value })} 
+                className="bg-background border-input text-foreground"
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Status</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">Status</label>
               <select
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
                 value={newSub.status}
                 onChange={(e) => setNewSub({ ...newSub, status: e.target.value as "Active" | "Expired" | "Cancelled" })}
               >
@@ -196,12 +201,12 @@ export default function AdminSubscriptionsPage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <p className="text-gray-600">Loading subscriptions...</p>
+          <p className="text-muted-foreground">Loading subscriptions...</p>
         </div>
       ) : subList.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
-            <p className="text-gray-600">No subscriptions found</p>
+            <p className="text-muted-foreground">No subscriptions found</p>
           </CardContent>
         </Card>
       ) : (
@@ -209,24 +214,23 @@ export default function AdminSubscriptionsPage() {
           {subList.map((sub: any) => (
             <Card key={sub._id}>
               <CardHeader>
-                <CardTitle>{sub.plan_name} - ${sub.amount}</CardTitle>
+                <CardTitle className="text-foreground">{sub.plan_name} - ${sub.amount}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="mb-2 text-sm text-gray-600">
+                <p className="mb-2 text-sm text-muted-foreground">
                   Provider: {typeof sub.provider_id === 'object' ? sub.provider_id.name : 'N/A'}
                 </p>
-                <p className="mb-2">
+                <p className="mb-2 text-foreground">
                   Duration: {sub.end_date && sub.start_date 
                     ? Math.ceil((new Date(sub.end_date).getTime() - new Date(sub.start_date).getTime()) / (1000 * 60 * 60 * 24)) 
                     : sub.end_date 
                     ? Math.ceil((new Date(sub.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
                     : 'N/A'} days
                 </p>
-                <p className="mb-2 text-sm">
-                  Status: <span className={`font-semibold ${sub.status === 'Active' ? 'text-green-600' : 'text-gray-600'}`}>
-                    {sub.status || 'N/A'}
-                  </span>
-                </p>
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Status:</span>
+                  <StatusBadge status={sub.status || "active"} />
+                </div>
                 <Button variant="destructive" size="sm" className="mt-4 w-full" onClick={() => handleDelete(sub._id)}>
                   Delete
                 </Button>

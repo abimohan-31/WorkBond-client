@@ -57,8 +57,8 @@ export default function AdminLoginPage() {
   // Show loading state while checking auth or redirecting
   if (authLoading || user?.role === "admin") {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-lg">Loading...</div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-lg text-foreground">Loading...</div>
       </div>
     );
   }
@@ -127,14 +127,14 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted px-4 py-12 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md shadow-xl border-border bg-card text-card-foreground">
         <CardHeader className="space-y-1 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Shield className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-3xl font-bold">Admin Portal</CardTitle>
-          <CardDescription className="text-base">
+          <CardTitle className="text-3xl font-bold text-foreground">Admin Portal</CardTitle>
+          <CardDescription className="text-base text-muted-foreground">
             Enter your administrator credentials to access the dashboard
           </CardDescription>
         </CardHeader>
@@ -146,13 +146,13 @@ export default function AdminLoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email Address</FormLabel>
+                    <FormLabel className="text-foreground">Email Address</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         placeholder="admin@workbond.com"
                         disabled={isLoading}
-                        className="h-11"
+                        className="h-11 bg-background border-input text-foreground"
                         {...field}
                       />
                     </FormControl>
@@ -165,15 +165,15 @@ export default function AdminLoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className="text-foreground">Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                           type="password"
                           placeholder="Enter your password"
                           disabled={isLoading}
-                          className="h-11 pl-10"
+                          className="h-11 pl-10 bg-background border-input text-foreground"
                           {...field}
                         />
                       </div>
@@ -217,7 +217,7 @@ export default function AdminLoginPage() {
               </Button>
             </form>
           </Form>
-          <div className="mt-6 text-center text-sm text-gray-500">
+          <div className="mt-6 text-center text-sm text-muted-foreground">
             <p>Unauthorized access is prohibited</p>
           </div>
         </CardContent>

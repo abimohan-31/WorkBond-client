@@ -163,7 +163,7 @@ export default function AdminPriceListsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Manage Price Lists</h1>
+        <h1 className="text-3xl font-bold text-foreground">Manage Price Lists</h1>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>Add Price List</Button>
@@ -177,9 +177,9 @@ export default function AdminPriceListsPage() {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Service *</label>
+                <label className="text-sm font-medium text-foreground">Service *</label>
                 <select
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
                   value={newPriceList.service_id}
                   onChange={(e) => setNewPriceList({ ...newPriceList, service_id: e.target.value })}
                 >
@@ -192,9 +192,9 @@ export default function AdminPriceListsPage() {
                 </select>
               </div>
               <div>
-                <label className="text-sm font-medium">Price Type *</label>
+                <label className="text-sm font-medium text-foreground">Price Type *</label>
                 <select
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
                   value={newPriceList.price_type}
                   onChange={(e) => setNewPriceList({ ...newPriceList, price_type: e.target.value as any })}
                 >
@@ -208,13 +208,14 @@ export default function AdminPriceListsPage() {
 
               {newPriceList.price_type === "fixed" && (
                 <div>
-                  <label className="text-sm font-medium">Fixed Price ($) *</label>
+                  <label className="text-sm font-medium text-foreground">Fixed Price ($) *</label>
                   <Input
                     type="number"
                     min="0"
                     step="0.01"
                     value={newPriceList.fixed_price}
                     onChange={(e) => setNewPriceList({ ...newPriceList, fixed_price: parseFloat(e.target.value) || 0 })}
+                    className="bg-background border-input text-foreground"
                   />
                 </div>
               )}
@@ -222,19 +223,20 @@ export default function AdminPriceListsPage() {
               {newPriceList.price_type === "per_unit" && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium">Unit Price ($) *</label>
+                    <label className="text-sm font-medium text-foreground">Unit Price ($) *</label>
                     <Input
                       type="number"
                       min="0"
                       step="0.01"
                       value={newPriceList.unit_price}
                       onChange={(e) => setNewPriceList({ ...newPriceList, unit_price: parseFloat(e.target.value) || 0 })}
+                      className="bg-background border-input text-foreground"
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Unit *</label>
+                    <label className="text-sm font-medium text-foreground">Unit *</label>
                     <select
-                      className="w-full px-3 py-2 border rounded-md"
+                      className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
                       value={newPriceList.unit}
                       onChange={(e) => setNewPriceList({ ...newPriceList, unit: e.target.value })}
                     >
@@ -249,35 +251,38 @@ export default function AdminPriceListsPage() {
               {newPriceList.price_type === "range" && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium">Min Price ($) *</label>
+                    <label className="text-sm font-medium text-foreground">Min Price ($) *</label>
                     <Input
                       type="number"
                       min="0"
                       step="0.01"
                       value={newPriceList.min_price}
                       onChange={(e) => setNewPriceList({ ...newPriceList, min_price: parseFloat(e.target.value) || 0 })}
+                      className="bg-background border-input text-foreground"
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Max Price ($) *</label>
+                    <label className="text-sm font-medium text-foreground">Max Price ($) *</label>
                     <Input
                       type="number"
                       min="0"
                       step="0.01"
                       value={newPriceList.max_price}
                       onChange={(e) => setNewPriceList({ ...newPriceList, max_price: parseFloat(e.target.value) || 0 })}
+                      className="bg-background border-input text-foreground"
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="text-sm font-medium">Description</label>
+                <label className="text-sm font-medium text-foreground">Description</label>
                 <Textarea
                   placeholder="Optional description..."
                   value={newPriceList.description}
                   onChange={(e) => setNewPriceList({ ...newPriceList, description: e.target.value })}
                   rows={2}
+                  className="bg-background border-input text-foreground"
                 />
               </div>
             </div>
@@ -293,12 +298,12 @@ export default function AdminPriceListsPage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <p className="text-gray-600">Loading price lists...</p>
+          <p className="text-muted-foreground">Loading price lists...</p>
         </div>
       ) : priceListData.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
-            <p className="text-gray-600 mb-4">No price lists created yet</p>
+            <p className="text-muted-foreground mb-4">No price lists created yet</p>
             <Button onClick={() => setIsCreateDialogOpen(true)}>Create First Price List</Button>
           </CardContent>
         </Card>
@@ -307,17 +312,17 @@ export default function AdminPriceListsPage() {
           {priceListData.map((priceList) => (
             <Card key={priceList._id}>
               <CardHeader>
-                <CardTitle className="text-lg">
+                <CardTitle className="text-lg text-foreground">
                   {typeof priceList.service_id === 'object' ? priceList.service_id.name : 'Service'}
                 </CardTitle>
-                <p className="text-sm text-gray-500 capitalize">{priceList.price_type.replace("_", " ")}</p>
+                <p className="text-sm text-muted-foreground capitalize">{priceList.price_type.replace("_", " ")}</p>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold text-[#061D4E] mb-2">
+                <p className="text-2xl font-bold text-primary mb-2">
                   {getPriceDisplay(priceList)}
                 </p>
                 {priceList.description && (
-                  <p className="text-sm text-gray-600 mb-3">{priceList.description}</p>
+                  <p className="text-sm text-muted-foreground mb-3">{priceList.description}</p>
                 )}
                 <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(priceList._id)}>
                   Delete

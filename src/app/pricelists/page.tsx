@@ -63,7 +63,7 @@ export default function PublicPriceListsPage() {
         <select
           value={priceTypeFilter}
           onChange={(e) => setPriceTypeFilter(e.target.value)}
-          className="px-4 py-2 border rounded-md md:w-1/4"
+          className="px-4 py-2 border rounded-md md:w-1/4 bg-background text-foreground border-input"
         >
           <option value="all">All Price Types</option>
           <option value="fixed">Fixed Price</option>
@@ -74,11 +74,11 @@ export default function PublicPriceListsPage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <p className="text-gray-600">Loading price lists...</p>
+          <p className="text-muted-foreground">Loading price lists...</p>
         </div>
       ) : filteredList.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-600">No price lists found</p>
+          <p className="text-muted-foreground">No price lists found</p>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-3">
@@ -87,20 +87,20 @@ export default function PublicPriceListsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>{item.service_id?.name || "Service"}</span>
-                  <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                  <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded">
                     {item.price_type.replace("_", " ")}
                   </span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="mb-4">
-                  <p className="text-sm text-gray-500 mb-1">Category</p>
+                  <p className="text-sm text-muted-foreground mb-1">Category</p>
                   <p className="text-sm font-medium">
                     {item.service_id?.category || "N/A"}
                   </p>
                 </div>
                 <div className="border-t pt-4">
-                  <p className="text-sm text-gray-500 mb-1">Price</p>
+                  <p className="text-sm text-muted-foreground mb-1">Price</p>
                   <div className="text-3xl font-bold text-primary mb-2">
                     {formatPrice(item)}
                   </div>

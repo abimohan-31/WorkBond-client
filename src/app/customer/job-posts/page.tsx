@@ -151,7 +151,7 @@ export default function CustomerJobPostsPage() {
               <div>
                 <label className="text-sm font-medium">Service Type *</label>
                 <select
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
                   value={newJob.service_id}
                   onChange={(e) => setNewJob({ ...newJob, service_id: e.target.value })}
                 >
@@ -287,11 +287,11 @@ export default function CustomerJobPostsPage() {
       </div>
 
       <div className="flex items-center gap-4">
-        <label className="text-sm font-medium text-gray-700">Filter by Service:</label>
+        <label className="text-sm font-medium text-muted-foreground">Filter by Service:</label>
         <select
           value={filterService}
           onChange={(e) => setFilterService(e.target.value)}
-          className="px-4 py-2 border rounded-md bg-white min-w-[200px]"
+          className="px-4 py-2 border rounded-md bg-background text-foreground border-input min-w-[200px]"
         >
           <option value="all">All Services ({jobs.length})</option>
           {services.map((service) => {
@@ -315,19 +315,19 @@ export default function CustomerJobPostsPage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <p className="text-gray-600">Loading job posts...</p>
+          <p className="text-muted-foreground">Loading job posts...</p>
         </div>
       ) : jobs.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
-            <p className="text-gray-600 mb-4">You haven't posted any jobs yet</p>
+            <p className="text-muted-foreground mb-4">You haven't posted any jobs yet</p>
             <Button onClick={() => setIsCreateDialogOpen(true)}>Post Your First Job</Button>
           </CardContent>
         </Card>
       ) : filteredJobs.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
-            <p className="text-gray-600 mb-4">No job posts found for this service</p>
+            <p className="text-muted-foreground mb-4">No job posts found for this service</p>
             <Button variant="outline" onClick={() => setFilterService("all")}>
               Show All Jobs
             </Button>
@@ -341,7 +341,7 @@ export default function CustomerJobPostsPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle>{job.title}</CardTitle>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       {typeof job.service_id === 'object' ? job.service_id.name : 'Service'} • {job.duration}
                       {job.location && ` • ${job.location}`}
                     </p>
@@ -352,7 +352,7 @@ export default function CustomerJobPostsPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 mb-4">{job.description}</p>
+                <p className="text-muted-foreground mb-4">{job.description}</p>
                 
                 {job.applications && job.applications.length > 0 && (
                   <div className="border-t pt-4">
@@ -363,13 +363,13 @@ export default function CustomerJobPostsPage() {
                       {job.applications.map((app) => (
                         <div
                           key={app._id}
-                          className="flex justify-between items-center p-3 bg-gray-50 rounded"
+                          className="flex justify-between items-center p-3 bg-muted rounded"
                         >
                           <div>
                             <p className="font-medium">
                               {typeof app.providerId === 'object' && app.providerId !== null ? (app.providerId as any).name : 'Provider'}
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                               Status: <span className="capitalize">{app.status}</span>
                             </p>
                           </div>
