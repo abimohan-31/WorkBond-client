@@ -192,14 +192,14 @@ export default function Home() {
               {filteredServices.map((service) => (
                 <Card
                   key={service._id}
-                  className="hover:shadow-lg transition-shadow"
+                  className="hover:shadow-lg transition-shadow flex flex-col h-full overflow-hidden"
                 >
-                  <div className="aspect-video w-full bg-muted relative">
+                  <div className="h-48 w-full bg-muted relative overflow-hidden">
                     {service.icon ? (
                       <img 
                         src={service.icon} 
                         alt={service.name} 
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -209,17 +209,17 @@ export default function Home() {
                   </div>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
-                      <span className="capitalize">{service.name}</span>
-                      <span className="text-sm font-normal text-muted-foreground bg-muted px-2 py-1 rounded">
+                      <span className="capitalize truncate pr-2">{service.name}</span>
+                      <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded whitespace-nowrap">
                         {service.category}
                       </span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">{service.description}</p>
-                    <div className="border-t pt-4">
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <p className="text-muted-foreground mb-4 line-clamp-3">{service.description}</p>
+                    <div className="border-t pt-4 mt-auto">
                       <p className="text-sm text-muted-foreground mb-1">Pricing</p>
-                      <p className="text-2xl font-bold text-secondary">
+                      <p className="text-lg font-bold text-secondary truncate">
                         {getPriceDisplay(service)}
                       </p>
                     </div>
