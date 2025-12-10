@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import CloudinaryImageUpload from "@/components/CloudinaryImageUpload";
 
 export default function ProviderProfilePage() {
   const { user } = useAuth();
@@ -35,11 +36,30 @@ export default function ProviderProfilePage() {
     }
   };
 
+  const handleImageUpdate = async (url: string) => {
+    try {
+      await providerService.updateProfileImage(url);
+      setProfile((prev: any) => ({ ...prev, profileImage: url }));
+      toast.success("Profile image updated");
+    } catch (err) {
+      toast.error("Failed to update profile image");
+    }
+  };
+
   if (!profile) return <div className="p-6">Loading...</div>;
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">Provider Profile</h1>
+      
+      <div className="flex justify-center mb-6">
+        <CloudinaryImageUpload
+          currentImageUrl={profile.profileImage}
+          onUploadSuccess={handleImageUpdate}
+          buttonText="Change Profile Picture"
+        />
+      </div>
+
       <div className="space-y-4 p-6 border rounded-lg bg-card">
         <div className="grid gap-2">
             <label className="text-sm font-medium">Name</label>

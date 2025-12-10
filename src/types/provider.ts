@@ -1,12 +1,29 @@
-export interface WorkImage {
+export interface WorkPostType {
+  _id: string;
   title: string;
-  description?: string;
+  description: string;
   beforeImage: string;
   afterImage: string;
-  category?: string;
+  category: string;
+  providerId: string | { _id: string; name: string; email: string; skills: string[]; rating: number; profileImage?: string };
+  jobPostId?: string | { _id: string; title: string; description: string };
+  service_id?: string | { _id: string; name: string; category: string };
+  customerId?: string | { _id: string; name: string; email: string };
+  completedAt: string;
+  customerFeedback?: string;
+  isPublic: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateWorkPostData {
+  title: string;
+  description: string;
+  beforeImage: string;
+  afterImage: string;
+  category: string;
   jobPostId?: string;
-  completedAt?: string;
-  _id?: string;
+  isPublic?: boolean;
 }
 
 export interface ProviderType {
@@ -20,7 +37,7 @@ export interface ProviderType {
   availability_status: "Available" | "Unavailable";
   rating: number;
   profileImage?: string;
-  workImages?: WorkImage[];
+  workPosts?: WorkPostType[];
   role: string;
   isApproved: boolean;
   isActive?: boolean;
@@ -46,7 +63,7 @@ export interface UpdateProviderData {
   skills?: string[];
   availability_status?: "Available" | "Unavailable";
   profileImage?: string;
-  workImages?: WorkImage[];
+  workPosts?: WorkPostType[];
   isActive?: boolean;
 }
 
