@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { adminService } from "@/services/admin.service";
+import { serviceService } from "@/services/service.service";
 import { RefreshCw, Users, Briefcase, Settings, CreditCard, Star, UserCheck } from "lucide-react";
 import Link from "next/link";
 
@@ -29,20 +30,42 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      // In a real app, you'd have a dedicated stats endpoint. 
-      // For now, we'll fetch lists and count them, or use existing endpoints.
-      // This is a placeholder for the actual counts logic.
-      const pendingRes = await adminService.getPendingProviders();
-      // const providersRes = await adminService.getProviders(); // Assuming this exists
-      // const customersRes = await adminService.getCustomers(); // Assuming this exists
+      
+      // Fetch all data in parallel
+      const [
+        pendingProvidersRes,
+        allProvidersRes,
+        customersRes,
+        servicesRes,
+        subscriptionsRes,
+        reviewsRes
+      ] = await Promise.all([
+        adminService.getPendingProviders(1, 1000), // Fetch with high limit to get all
+        adminService.getAllProviders(),
+        adminService.getAllCustomers({ limit: 1000 }),
+        serviceService.getAll(),
+        adminService.getAllSubscriptions(),
+        adminService.getAllReviews()
+      ]);
+
+      // Extract counts from responses
+      const pendingProviders = pendingProvidersRes.data?.providers || [];
+      const allProviders = allProvidersRes.data || [];
+      const customers = customersRes.data?.customers || [];
+      const services = servicesRes.data || [];
+      const subscriptions = subscriptionsRes.data || [];
+      const reviews = reviewsRes.data || [];
+
+      // Calculate active providers (approved providers)
+      const activeProviders = allProviders.filter((p: any) => p.isApproved === true);
       
       setStats({
-        pendingProviders: pendingRes.data?.providers?.length || 0,
-        activeProviders: 0, // Placeholder
-        customers: 0, // Placeholder
-        services: 0, // Placeholder
-        subscriptions: 0, // Placeholder
-        reviews: 0 // Placeholder
+        pendingProviders: pendingProviders.length,
+        activeProviders: activeProviders.length,
+        customers: customers.length,
+        services: services.length,
+        subscriptions: subscriptions.length,
+        reviews: reviews.length
       });
     } catch (error) {
       console.error("Error fetching dashboard data:", error);

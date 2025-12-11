@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { reviewService } from "@/services/review.service";
-import { customerService } from "@/services/customer.service";
-import apiClient from "@/lib/apiClient";
+import { jobPostService } from "@/services/jobPost.service";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,8 +37,8 @@ interface Review {
 interface Provider {
   _id: string;
   name: string;
-  email: string;
-  skills: string[];
+  email?: string;
+  skills?: string[];
 }
 
 export default function CustomerReviewsPage() {
@@ -63,13 +62,47 @@ export default function CustomerReviewsPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [reviewsRes, providersRes] = await Promise.all([
-        reviewService.getAll(),
-        apiClient.get("/customers/providers"),
-      ]);
+      
+      // Fetch all reviews and filter for customer's own reviews
+      const reviewsRes = await reviewService.getAll();
+      const allReviews = reviewsRes.data || [];
+      
+      // Filter to show only this customer's reviews
+      const customerReviews = allReviews.filter((review: Review) => {
+        if (typeof review.customer_id === 'object' && review.customer_id?._id) {
+          return review.customer_id._id === user?._id;
+        }
+        return review.customer_id === user?._id;
+      });
+      
+      setReviewList(customerReviews);
 
-      setReviewList(reviewsRes.data || []);
-      setProviders(providersRes.data || []);
+      // Fetch customer's job posts to get providers who applied
+      const jobPostsRes = await jobPostService.getAll();
+      const jobPosts = jobPostsRes.data || [];
+      
+      // Extract unique providers from job applications
+      const providerMap = new Map<string, Provider>();
+      
+      jobPosts.forEach((jobPost: any) => {
+        if (jobPost.applications && Array.isArray(jobPost.applications)) {
+          jobPost.applications.forEach((app: any) => {
+            if (app.providerId) {
+              const provider = typeof app.providerId === 'object' ? app.providerId : null;
+              if (provider && provider._id) {
+                providerMap.set(provider._id, {
+                  _id: provider._id,
+                  name: provider.name || 'Unknown Provider',
+                  email: provider.email,
+                  skills: provider.skills || [],
+                });
+              }
+            }
+          });
+        }
+      });
+      
+      setProviders(Array.from(providerMap.values()));
     } catch (error: any) {
       console.error("Error fetching data:", error);
       toast.error("Failed to load reviews");
@@ -119,64 +152,78 @@ export default function CustomerReviewsPage() {
         <h1 className="text-3xl font-bold">My Reviews</h1>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button>Write a Review</Button>
+            <Button disabled={providers.length === 0}>Write a Review</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Write a Review</DialogTitle>
               <DialogDescription>
-                Share your experience with a service provider
+                Share your experience with a service provider you've worked with
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Provider *</label>
-                <Select
-                  value={newReview.provider_id}
-                  onValueChange={(value) => setNewReview({ ...newReview, provider_id: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a provider" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {providers.map((provider) => (
-                      <SelectItem key={provider._id} value={provider._id}>
-                        {provider.name} - {provider.skills.join(", ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium">Rating * ({newReview.rating}/5)</label>
-                <input
-                  type="range"
-                  min="1"
-                  max="5"
-                  value={newReview.rating}
-                  onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>Poor</span>
-                  <span>Excellent</span>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium">Comment *</label>
-                <Textarea
-                  placeholder="Share your experience..."
-                  value={newReview.comment}
-                  onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                  rows={4}
-                />
-              </div>
+              {providers.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  You can only review providers who have applied to your job posts.
+                  Post a job first to get provider applications.
+                </p>
+              ) : (
+                <>
+                  <div>
+                    <label className="text-sm font-medium">Provider *</label>
+                    <Select
+                      value={newReview.provider_id}
+                      onValueChange={(value) => setNewReview({ ...newReview, provider_id: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a provider" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {providers.map((provider) => (
+                          <SelectItem key={provider._id} value={provider._id}>
+                            {provider.name}
+                            {provider.skills && provider.skills.length > 0 && 
+                              ` - ${provider.skills.join(", ")}`
+                            }
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Rating * ({newReview.rating}/5)</label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      value={newReview.rating}
+                      onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <span>Poor</span>
+                      <span>Excellent</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Comment *</label>
+                    <Textarea
+                      placeholder="Share your experience..."
+                      value={newReview.comment}
+                      onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                      rows={4}
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleCreate}>Post Review</Button>
+              {providers.length > 0 && (
+                <Button onClick={handleCreate}>Post Review</Button>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -190,7 +237,13 @@ export default function CustomerReviewsPage() {
         <Card>
           <CardContent className="text-center py-12">
             <p className="text-muted-foreground mb-4">You haven't written any reviews yet</p>
-            <Button onClick={() => setIsCreateDialogOpen(true)}>Write Your First Review</Button>
+            {providers.length > 0 ? (
+              <Button onClick={() => setIsCreateDialogOpen(true)}>Write Your First Review</Button>
+            ) : (
+              <p className="text-sm text-muted-foreground mt-2">
+                Post a job and wait for provider applications to be able to write reviews
+              </p>
+            )}
           </CardContent>
         </Card>
       ) : (

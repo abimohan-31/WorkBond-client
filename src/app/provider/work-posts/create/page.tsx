@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CldUploadWidget } from "next-cloudinary";
-import { Upload, X, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
+import { UploadBox } from "@/components/ui/upload-box";
 
 export default function CreateWorkPostPage() {
   const router = useRouter();
@@ -60,11 +60,9 @@ export default function CreateWorkPostPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageUpload = (result: any, field: "beforeImage" | "afterImage") => {
-    if (result?.info?.secure_url) {
-      setFormData((prev) => ({ ...prev, [field]: result.info.secure_url }));
-      toast.success("Image uploaded successfully");
-    }
+  const handleImageUpload = (url: string, field: "beforeImage" | "afterImage") => {
+    setFormData((prev) => ({ ...prev, [field]: url }));
+    toast.success("Image uploaded successfully");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -92,49 +90,6 @@ export default function CreateWorkPostPage() {
       setLoading(false);
     }
   };
-
-  const UploadBox = ({ field, label, value }: { field: "beforeImage" | "afterImage"; label: string; value: string }) => (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      <div className="border-2 border-dashed rounded-lg p-4 text-center hover:bg-muted/50 transition-colors relative min-h-[200px] flex flex-col items-center justify-center">
-        {value ? (
-          <div className="relative w-full h-full">
-            <img src={value} alt={label} className="max-h-[200px] mx-auto object-contain rounded-md" />
-            <Button
-              type="button"
-              variant="destructive"
-              size="icon"
-              className="absolute top-0 right-0 h-6 w-6"
-              onClick={() => setFormData((prev) => ({ ...prev, [field]: "" }))}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        ) : (
-          <CldUploadWidget
-            uploadPreset="WorkBond"
-            options={{
-              maxFiles: 1,
-              maxFileSize: 10000000,
-              clientAllowedFormats: ["jpg", "jpeg", "png", "webp"],
-              sources: ["local", "camera"],
-            }}
-            onSuccess={(result) => handleImageUpload(result, field)}
-          >
-            {({ open }) => (
-              <div 
-                className="cursor-pointer w-full h-full flex flex-col items-center justify-center py-8"
-                onClick={() => open()}
-              >
-                <Upload className="h-10 w-10 text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">Click to upload {label}</p>
-              </div>
-            )}
-          </CldUploadWidget>
-        )}
-      </div>
-    </div>
-  );
 
   if (checkingSubscription) {
     return (
@@ -212,8 +167,18 @@ export default function CreateWorkPostPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <UploadBox field="beforeImage" label="Before Image" value={formData.beforeImage} />
-              <UploadBox field="afterImage" label="After Image" value={formData.afterImage} />
+              <UploadBox
+                label="Before Image"
+                value={formData.beforeImage}
+                onUpload={(url) => handleImageUpload(url, "beforeImage")}
+                onClear={() => setFormData((prev) => ({ ...prev, beforeImage: "" }))}
+              />
+              <UploadBox
+                label="After Image"
+                value={formData.afterImage}
+                onUpload={(url) => handleImageUpload(url, "afterImage")}
+                onClear={() => setFormData((prev) => ({ ...prev, afterImage: "" }))}
+              />
             </div>
 
             <div className="flex items-center space-x-2">
