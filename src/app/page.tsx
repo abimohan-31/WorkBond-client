@@ -147,7 +147,7 @@ export default function Home() {
       <HeroSection
         title="Welcome to WorkBond"
         subtitle="Connecting talented professionals with forward-thinking companies. WorkBond bridges the gap between exceptional talent and meaningful opportunities, creating lasting professional relationships that drive success."
-        primaryAction={{ label: "Get Started", href: "/auth/register" }}
+        primaryAction={{ label: "Get Started", href: "/auth/register/customer" }}
         secondaryAction={{ label: "Learn More", href: "#services" }}
         className="mb-12"
       />
@@ -230,7 +230,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* Price Lists Section */}
+        {/* Price Lists Section
         <div className="mt-16">
           <h2 className="text-3xl font-bold text-foreground mb-6">
             Service Pricing
@@ -313,7 +313,7 @@ export default function Home() {
               })}
             </div>
           )}
-        </div>
+        </div> */}
       </div>
     </main>
   );
