@@ -25,20 +25,32 @@ export default function ProviderDashboard() {
   const [jobPostsList, setJobPostsList] = useState<JobPostType[]>([]);
   const [loading, setLoading] = useState(true);
   const [jobsLoading, setJobsLoading] = useState(true);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<any>(null);
 
   useEffect(() => {
     if (user && user.role === "provider") {
-      // Only fetch data if provider is approved
       if (user.isApproved) {
         fetchStats();
         fetchJobPosts();
+        fetchSubscriptionStatus();
       } else {
-        // Set loading to false for unapproved providers
         setLoading(false);
         setJobsLoading(false);
       }
     }
   }, [user]);
+
+  const fetchSubscriptionStatus = async () => {
+    try {
+      const { paymentService } = await import("@/services/payment.service");
+      const response = await paymentService.getSubscriptionStatus();
+      if (response.success) {
+        setSubscriptionStatus(response.data);
+      }
+    } catch (error: any) {
+      console.error("Error fetching subscription:", error);
+    }
+  };
 
   const fetchStats = async () => {
     try {
@@ -189,6 +201,21 @@ export default function ProviderDashboard() {
           <p className="text-muted-foreground">Welcome back, {user.name}</p>
         </div>
       </div>
+
+      {!subscriptionStatus?.activeSubscription && (
+        <div className="mb-6">
+          <AlertBanner
+            type="warning"
+            title="No Active Subscription"
+            message="You need an active subscription to create work posts and access all provider features."
+          />
+          <Link href="/provider/subscriptions">
+            <Button variant="default" size="sm" className="mt-2">
+              View Subscription Plans
+            </Button>
+          </Link>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
         <Card>

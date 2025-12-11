@@ -188,6 +188,11 @@ export default function CustomerDashboard() {
             <Link href="/customer/job-posts">
               <Button className="w-full">Post a New Job</Button>
             </Link>
+            <Link href="/customer/work-posts">
+              <Button variant="outline" className="w-full">
+                Browse Provider Work
+              </Button>
+            </Link>
             <Link href="/customer/reviews">
               <Button variant="outline" className="w-full">
                 Write a Review
