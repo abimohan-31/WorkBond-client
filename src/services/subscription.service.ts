@@ -23,5 +23,19 @@ export const subscriptionService = {
     const response = await apiClient.delete(`/subscriptions/${id}`);
     return response.data;
   },
+
+  createProviderSubscription: async (planName: string, amount: number): Promise<ApiResponse<SubscriptionType>> => {
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1);
+
+    const response = await apiClient.post("/subscriptions/provider/subscribe", {
+      plan_name: planName,
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString(),
+      amount,
+    });
+    return response.data;
+  },
 };
 

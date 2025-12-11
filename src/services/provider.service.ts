@@ -53,5 +53,15 @@ export const providerService = {
     const response = await apiClient.put("/providers/profile", { profileImage: imageUrl });
     return response.data;
   },
+
+  getAllPublicWorkPosts: async (params?: any): Promise<ApiResponse<any>> => {
+    const response = await apiClient.get("/workposts", { params });
+    return response.data;
+  },
+
+  getProviderById: async (id: string): Promise<ApiResponse<{ provider: ProviderType }>> => {
+    const response = await apiClient.get(`/providers/public/${id}`);
+    return response.data;
+  },
 };
 

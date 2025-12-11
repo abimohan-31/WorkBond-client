@@ -17,6 +17,7 @@ import {
   CreditCard,
   DollarSign,
   Star,
+  PlusCircle,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -95,6 +96,12 @@ export function Sidebar({ role }: SidebarProps) {
       show: permissions.isProvider,
     },
     {
+      label: "Create Work Post",
+      href: "/provider/work-posts/create",
+      icon: PlusCircle,
+      show: permissions.isProvider,
+    },
+    {
       label: "Job Opportunities",
       href: "/provider/job-posts",
       icon: Briefcase,
@@ -124,7 +131,7 @@ export function Sidebar({ role }: SidebarProps) {
       label: "Profile",
       href: role === "admin" ? `/workbond/${role}/profile` : `/${role}/profile`,
       icon: User,
-      show: true, // Everyone has a profile
+      show: role !== "admin", // Everyone has a profile except admin
     },
     {
       label: "Settings",
