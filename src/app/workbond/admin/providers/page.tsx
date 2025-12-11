@@ -14,14 +14,28 @@ import {
 import { toast } from "sonner";
 import { adminService } from "@/services/admin.service";
 import { ProviderType } from "@/types/provider";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Ban, CheckCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 export default function AdminProvidersPage() {
   const { user } = useAuth();
   const [providers, setProviders] = useState<ProviderType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    variant?: "default" | "destructive";
+  }>({
+    open: false,
+    title: "",
+    description: "",
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     if (user && user.role === "admin") {
@@ -33,7 +47,6 @@ export default function AdminProvidersPage() {
     try {
       setIsLoading(true);
       const response = await adminService.getAllProviders();
-      // API returns: { success: true, data: providers[] } (direct array, not wrapped)
       setProviders(response.data || []);
     } catch (error) {
       console.error("Error fetching providers:", error);
@@ -52,6 +65,62 @@ export default function AdminProvidersPage() {
     await fetchProviders();
     setIsRefreshing(false);
     toast.success("Providers refreshed");
+  };
+
+  const handleBanProvider = async (providerId: string, providerName: string) => {
+    setConfirmDialog({
+      open: true,
+      title: "Ban Provider",
+      description: `Are you sure you want to ban ${providerName}? They will not be able to access the system.`,
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await adminService.banProvider(providerId);
+          toast.success(`${providerName} has been banned`);
+          fetchProviders();
+        } catch (error) {
+          toast.error("Failed to ban provider");
+        }
+        setConfirmDialog({ ...confirmDialog, open: false });
+      },
+    });
+  };
+
+  const handleActivateProvider = async (providerId: string, providerName: string) => {
+    setConfirmDialog({
+      open: true,
+      title: "Activate Provider",
+      description: `Are you sure you want to activate ${providerName}? They will be able to access the system.`,
+      onConfirm: async () => {
+        try {
+          await adminService.activateProvider(providerId);
+          toast.success(`${providerName} has been activated`);
+          fetchProviders();
+        } catch (error) {
+          toast.error("Failed to activate provider");
+        }
+        setConfirmDialog({ ...confirmDialog, open: false });
+      },
+    });
+  };
+
+  const handleDeleteProvider = async (providerId: string, providerName: string) => {
+    setConfirmDialog({
+      open: true,
+      title: "Delete Provider",
+      description: `Are you sure you want to delete ${providerName}? This action cannot be undone.`,
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await adminService.deleteProvider(providerId);
+          toast.success(`${providerName} has been deleted`);
+          fetchProviders();
+        } catch (error) {
+          toast.error("Failed to delete provider");
+        }
+        setConfirmDialog({ ...confirmDialog, open: false });
+      },
+    });
   };
 
   if (!user || user.role !== "admin") {
@@ -89,9 +158,9 @@ export default function AdminProvidersPage() {
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Phone</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Availability</TableHead>
-                  <TableHead>Rating</TableHead>
+                  <TableHead>Approval</TableHead>
+                  <TableHead>Account Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -101,13 +170,45 @@ export default function AdminProvidersPage() {
                     <TableCell>{provider.email}</TableCell>
                     <TableCell>{provider.phone}</TableCell>
                     <TableCell>
-                      {provider.isApproved ? "Approved" : "Pending"}
+                      <Badge variant={provider.isApproved ? "default" : "secondary"}>
+                        {provider.isApproved ? "Approved" : "Pending"}
+                      </Badge>
                     </TableCell>
                     <TableCell>
-                      {provider.availability_status || "N/A"}
+                      <Badge variant={provider.account_status === "active" ? "default" : "destructive"}>
+                        {provider.account_status || "active"}
+                      </Badge>
                     </TableCell>
                     <TableCell>
-                      {provider.rating ? provider.rating.toFixed(1) : "0.0"}
+                      <div className="flex gap-2">
+                        {provider.account_status === "active" ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleBanProvider(provider._id, provider.name)}
+                          >
+                            <Ban className="h-4 w-4 mr-1" />
+                            Ban
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleActivateProvider(provider._id, provider.name)}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Activate
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteProvider(provider._id, provider.name)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -123,7 +224,15 @@ export default function AdminProvidersPage() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        variant={confirmDialog.variant}
+      />
     </>
   );
 }
-

@@ -2,12 +2,13 @@ export interface CustomerType {
   _id: string;
   name: string;
   email: string;
-  phone?: string;
+  phone: string;
   address?: string;
   profileImage?: string;
   role: string;
-  createdAt?: string;
-  updatedAt?: string;
+  account_status?: "active" | "inactive";
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UpdateCustomerData {

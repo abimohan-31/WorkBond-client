@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { providerService } from "@/services/provider.service";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 export default function CreateWorkPostPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [checkingSubscription, setCheckingSubscription] = useState(true);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -24,6 +26,34 @@ export default function CreateWorkPostPage() {
     afterImage: "",
     isPublic: true,
   });
+
+  useEffect(() => {
+    checkSubscription();
+  }, []);
+
+  const checkSubscription = async () => {
+    try {
+      setCheckingSubscription(true);
+      const { paymentService } = await import("@/services/payment.service");
+      const response = await paymentService.getSubscriptionStatus();
+      
+      if (response.success && response.data?.activeSubscription) {
+        setHasActiveSubscription(true);
+      } else {
+        setHasActiveSubscription(false);
+        toast.error("You need an active subscription to create work posts");
+        setTimeout(() => {
+          router.push("/provider/subscriptions");
+        }, 2000);
+      }
+    } catch (error: any) {
+      console.error("Error checking subscription:", error);
+      setHasActiveSubscription(false);
+      toast.error("Failed to verify subscription status");
+    } finally {
+      setCheckingSubscription(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -105,6 +135,38 @@ export default function CreateWorkPostPage() {
       </div>
     </div>
   );
+
+  if (checkingSubscription) {
+    return (
+      <div className="container mx-auto p-6 max-w-3xl">
+        <Card>
+          <CardContent className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Verifying subscription...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!hasActiveSubscription) {
+    return (
+      <div className="container mx-auto p-6 max-w-3xl">
+        <Card>
+          <CardHeader>
+            <CardTitle>Subscription Required</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              You need an active subscription to create work posts. Redirecting to subscription page...
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 max-w-3xl">

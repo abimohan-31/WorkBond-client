@@ -14,14 +14,28 @@ import {
 import { toast } from "sonner";
 import { adminService } from "@/services/admin.service";
 import { CustomerType } from "@/types/customer";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Ban, CheckCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 export default function AdminCustomersPage() {
   const { user } = useAuth();
   const [customers, setCustomers] = useState<CustomerType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    variant?: "default" | "destructive";
+  }>({
+    open: false,
+    title: "",
+    description: "",
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     if (user && user.role === "admin") {
@@ -33,13 +47,10 @@ export default function AdminCustomersPage() {
     try {
       setIsLoading(true);
       const response = await adminService.getAllCustomers();
-      // API returns: { success: true, data: { customers: [], pagination: {} } }
       setCustomers(response.data?.customers || []);
     } catch (error) {
       console.error("Error fetching customers:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to fetch customers"
-      );
+      toast.error("Failed to fetch customers");
     } finally {
       setIsLoading(false);
     }
@@ -50,6 +61,62 @@ export default function AdminCustomersPage() {
     await fetchCustomers();
     setIsRefreshing(false);
     toast.success("Customers refreshed");
+  };
+
+  const handleBanCustomer = async (customerId: string, customerName: string) => {
+    setConfirmDialog({
+      open: true,
+      title: "Ban Customer",
+      description: `Are you sure you want to ban ${customerName}? They will not be able to access the system.`,
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await adminService.banCustomer(customerId);
+          toast.success(`${customerName} has been banned`);
+          fetchCustomers();
+        } catch (error) {
+          toast.error("Failed to ban customer");
+        }
+        setConfirmDialog({ ...confirmDialog, open: false });
+      },
+    });
+  };
+
+  const handleActivateCustomer = async (customerId: string, customerName: string) => {
+    setConfirmDialog({
+      open: true,
+      title: "Activate Customer",
+      description: `Are you sure you want to activate ${customerName}? They will be able to access the system.`,
+      onConfirm: async () => {
+        try {
+          await adminService.activateCustomer(customerId);
+          toast.success(`${customerName} has been activated`);
+          fetchCustomers();
+        } catch (error) {
+          toast.error("Failed to activate customer");
+        }
+        setConfirmDialog({ ...confirmDialog, open: false });
+      },
+    });
+  };
+
+  const handleDeleteCustomer = async (customerId: string, customerName: string) => {
+    setConfirmDialog({
+      open: true,
+      title: "Delete Customer",
+      description: `Are you sure you want to delete ${customerName}? This action cannot be undone.`,
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await adminService.deleteCustomer(customerId);
+          toast.success(`${customerName} has been deleted`);
+          fetchCustomers();
+        } catch (error) {
+          toast.error("Failed to delete customer");
+        }
+        setConfirmDialog({ ...confirmDialog, open: false });
+      },
+    });
   };
 
   if (!user || user.role !== "admin") {
@@ -87,7 +154,8 @@ export default function AdminCustomersPage() {
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Phone</TableHead>
-                  <TableHead>Joined</TableHead>
+                  <TableHead>Account Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -95,17 +163,48 @@ export default function AdminCustomersPage() {
                   <TableRow key={customer._id}>
                     <TableCell>{customer.name}</TableCell>
                     <TableCell>{customer.email}</TableCell>
-                    <TableCell>{customer.phone || "N/A"}</TableCell>
+                    <TableCell>{customer.phone}</TableCell>
                     <TableCell>
-                      {customer.createdAt
-                        ? new Date(customer.createdAt).toLocaleDateString()
-                        : "N/A"}
+                      <Badge variant={customer.account_status === "active" ? "default" : "destructive"}>
+                        {customer.account_status || "active"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        {customer.account_status === "active" ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleBanCustomer(customer._id, customer.name)}
+                          >
+                            <Ban className="h-4 w-4 mr-1" />
+                            Ban
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleActivateCustomer(customer._id, customer.name)}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Activate
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteCustomer(customer._id, customer.name)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
                 {customers.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center">
+                    <TableCell colSpan={5} className="text-center">
                       No customers found
                     </TableCell>
                   </TableRow>
@@ -115,6 +214,15 @@ export default function AdminCustomersPage() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        variant={confirmDialog.variant}
+      />
     </>
   );
 }

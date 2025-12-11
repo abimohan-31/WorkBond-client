@@ -48,5 +48,35 @@ export const adminService = {
     const response = await apiClient.delete(`/reviews/${id}`);
     return response.data;
   },
+
+  banProvider: async (id: string): Promise<ApiResponse<{ provider: ProviderType }>> => {
+    const response = await apiClient.patch(`/providers/${id}/ban`);
+    return response.data;
+  },
+
+  activateProvider: async (id: string): Promise<ApiResponse<{ provider: ProviderType }>> => {
+    const response = await apiClient.patch(`/providers/${id}/activate`);
+    return response.data;
+  },
+
+  banCustomer: async (id: string): Promise<ApiResponse<{ customer: CustomerType }>> => {
+    const response = await apiClient.patch(`/customers/${id}/ban`);
+    return response.data;
+  },
+
+  activateCustomer: async (id: string): Promise<ApiResponse<{ customer: CustomerType }>> => {
+    const response = await apiClient.patch(`/customers/${id}/activate`);
+    return response.data;
+  },
+
+  deleteCustomer: async (id: string): Promise<ApiResponse<void>> => {
+    const response = await apiClient.delete(`/customers/${id}`);
+    return response.data;
+  },
+
+  updateSubscriptionStatus: async (id: string, status: string): Promise<ApiResponse<{ subscription: SubscriptionType }>> => {
+    const response = await apiClient.patch(`/subscriptions/${id}`, { status });
+    return response.data;
+  },
 };
 

@@ -40,6 +40,7 @@ export interface ProviderType {
   workPosts?: WorkPostType[];
   role: string;
   isApproved: boolean;
+  account_status?: "active" | "inactive";
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;

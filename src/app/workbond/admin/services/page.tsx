@@ -513,12 +513,12 @@ export default function AdminServicesPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {serviceList.map((service) => (
             <Card key={service._id} className="overflow-hidden">
-              <div className="aspect-video w-full bg-muted relative">
+              <div className="aspect-video w-full bg-muted relative overflow-hidden">
                 {service.icon ? (
                   <img 
                     src={service.icon} 
                     alt={service.name} 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform hover:scale-105"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground">
