@@ -14,6 +14,7 @@ export function middleware(request: NextRequest) {
     "/auth/register",
     "/services",
     "/pricelists",
+    "/workbond/admin/login",
   ];
   const isPublicRoute = publicRoutes.some(
     (route) => pathname === route || pathname.startsWith(route + "/")
