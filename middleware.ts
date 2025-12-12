@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
   // Protected routes
   if (!token) {
     const loginUrl = new URL("/auth/login", request.url);
-    return NextResponse.redirect(loginUrl);
+    // return NextResponse.redirect(loginUrl);
   }
 
   // Role-based access
