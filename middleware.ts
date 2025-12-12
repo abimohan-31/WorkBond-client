@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
   // Protected routes
   if (!token) {
     const loginUrl = new URL("/auth/login", request.url);
-    // return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(loginUrl);
   }
 
   // Role-based access
@@ -26,7 +26,7 @@ export function middleware(request: NextRequest) {
       const user = JSON.parse(userCookie);
       
       // Admin routes
-      if (pathname.startsWith("/admin")) {
+      if (pathname.startsWith("/workbond/admin")) {
         if (user.role !== "admin") {
           const homeUrl = new URL("/", request.url);
           return NextResponse.redirect(homeUrl);
@@ -51,7 +51,7 @@ export function middleware(request: NextRequest) {
     } catch (error) {
       // Invalid user cookie, redirect to login
       const loginUrl = new URL("/auth/login", request.url);
-      // return NextResponse.redirect(loginUrl);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
