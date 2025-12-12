@@ -220,6 +220,7 @@ export default function Home() {
           href: "/auth/register/customer",
         }}
         secondaryAction={{ label: "Learn More", href: "#services" }}
+        sideImage="https://images.pexels.com/photos/6077647/pexels-photo-6077647.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop"
         className="mb-12"
       />
 
@@ -258,7 +259,7 @@ export default function Home() {
               ))}
             </select>
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={handleClearFilters}
               aria-label="Clear search and filters"
             >
