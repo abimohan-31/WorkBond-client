@@ -1,103 +1,114 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { serviceService } from "@/services/service.service";
 import { priceListService } from "@/services/priceList.service";
+import { workPostService } from "@/services/workPost.service";
+import { providerService } from "@/services/provider.service";
 import { toast } from "sonner";
 import { HeroSection } from "@/components/ui/HeroSection";
+import { WorkPostType } from "@/types/provider";
+import { ProviderDetailsModal } from "@/components/modals/ProviderDetailsModal";
+import { PriceList, Service } from "@/types/workPost";
 
-interface Service {
+interface ProviderInfo {
   _id: string;
   name: string;
-  description: string;
-  category: string;
-  base_price: number;
-  unit: string;
-  isActive: boolean;
-  icon?: string;
-}
-
-interface PriceList {
-  _id: string;
-  service_id: string;
-  price_type: "fixed" | "per_unit" | "range";
-  fixed_price?: number;
-  unit_price?: number;
-  unit?: string;
-  min_price?: number;
-  max_price?: number;
-  description?: string;
-  isActive: boolean;
+  email: string;
+  phone: string;
+  address: string;
+  experience_years: number;
+  skills: string[];
+  availability_status: string;
+  profileImage?: string;
+  rating?: number;
 }
 
 export default function Home() {
+  const { user, isLoading: authLoading } = useAuth();
   const [services, setServices] = useState<Service[]>([]);
   const [priceLists, setPriceLists] = useState<PriceList[]>([]);
+  const [workPosts, setWorkPosts] = useState<WorkPostType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [priceListSearch, setPriceListSearch] = useState("");
-  const [priceTypeFilter, setPriceTypeFilter] = useState("all");
+  const [selectedProvider, setSelectedProvider] = useState<ProviderInfo | null>(
+    null
+  );
+  const [modalOpen, setModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const isCustomerLoggedIn = user && user.role === "customer";
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      console.log("Fetching data from API...");
-      console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
 
-      const [servicesRes, priceListsRes] = await Promise.all([
-        serviceService.getAll(),
-        priceListService.getAll(),
-      ]);
+      if (isCustomerLoggedIn) {
+        const workPostsRes = await workPostService.getAll();
+        if (workPostsRes.success && workPostsRes.data) {
+          const posts = Array.isArray(workPostsRes.data)
+            ? workPostsRes.data
+            : [];
+          setWorkPosts(posts);
+        }
+      } else {
+        const [servicesRes, priceListsRes] = await Promise.all([
+          serviceService.getAll(),
+          priceListService.getAll(),
+        ]);
 
-      console.log("Services response:", servicesRes.data);
-      console.log("Price lists response:", priceListsRes.data);
-
-      // Both endpoints return data array directly in data property
-      setServices(servicesRes.data || []);
-      setPriceLists(priceListsRes.data || []);
-
-      console.log("Services loaded:", servicesRes.data?.length || 0);
-      console.log("Price lists loaded:", priceListsRes.data?.length || 0);
+        setServices(servicesRes.data || []);
+        setPriceLists(priceListsRes.data || []);
+      }
     } catch (error: any) {
       console.error("Error fetching data:", error);
-      console.error("Error details:", error.response?.data || error.message);
-      toast.error("Failed to load services");
+      if (isCustomerLoggedIn) {
+        toast.error("Failed to load work posts");
+      } else {
+        toast.error("Failed to load services");
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [isCustomerLoggedIn]);
 
-  const getPriceDisplay = (service: Service) => {
-    const servicePriceLists = priceLists.filter(
-      (pl) => pl.service_id === service._id && pl.isActive
-    );
-
-    if (servicePriceLists.length === 0) {
-      return `LKR${service.base_price}/${service.unit}`;
+  useEffect(() => {
+    if (!authLoading) {
+      fetchData();
     }
+  }, [authLoading, fetchData]);
 
-    return servicePriceLists
-      .map((pl, idx) => {
-        if (pl.price_type === "fixed") {
-          return `LKR${pl.fixed_price} fixed`;
-        } else if (pl.price_type === "per_unit") {
-          return `LKR${pl.unit_price}/${pl.unit}`;
-        } else if (pl.price_type === "range") {
-          return `LKR${pl.min_price} - LKR${pl.max_price}`;
-        }
-        return "";
-      })
-      .join(" • ");
-  };
+  const getPriceDisplay = useCallback(
+    (service: Service) => {
+      const servicePriceLists = priceLists.filter(
+        (pl) => pl.service_id === service._id && pl.isActive
+      );
+
+      if (servicePriceLists.length === 0) {
+        return `LKR ${service.base_price}/${service.unit}`;
+      }
+
+      return servicePriceLists
+        .map((pl) => {
+          if (pl.price_type === "fixed") {
+            return `LKR ${pl.fixed_price} fixed`;
+          } else if (pl.price_type === "per_unit") {
+            return `LKR ${pl.unit_price}/${pl.unit}`;
+          } else if (pl.price_type === "range") {
+            return `LKR ${pl.min_price} - LKR ${pl.max_price}`;
+          }
+          return "";
+        })
+        .filter(Boolean)
+        .join(" • ");
+    },
+    [priceLists]
+  );
 
   const categories = [
     "all",
@@ -121,56 +132,124 @@ export default function Home() {
     return matchesSearch && matchesCategory && service.isActive;
   });
 
-  const filteredPriceLists = priceLists.filter((pl: any) => {
-    const service = services.find(
-      (s) => s._id === pl.service_id?._id || pl.service_id
-    );
-    const serviceName =
-      typeof pl.service_id === "object" ? pl.service_id?.name : service?.name;
+  const filteredWorkPosts = workPosts.filter((post) => {
     const matchesSearch =
-      serviceName?.toLowerCase().includes(priceListSearch.toLowerCase()) ||
+      post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      post.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       false;
-    const matchesPriceType =
-      priceTypeFilter === "all" || pl.price_type === priceTypeFilter;
-    return matchesSearch && matchesPriceType && pl.isActive;
+    const matchesCategory =
+      selectedCategory === "all" || post.category === selectedCategory;
+    return matchesSearch && matchesCategory;
   });
 
-  const formatPriceListPrice = (pl: any) => {
-    if (pl.price_type === "fixed") return `LKR${pl.fixed_price} fixed`;
-    if (pl.price_type === "per_unit") return `LKR${pl.unit_price}/${pl.unit}`;
-    if (pl.price_type === "range")
-      return `LKR${pl.min_price} - LKR${pl.max_price}`;
-    return "Price not available";
-  };
+  const handleViewProviderDetails = useCallback(
+    async (provider: ProviderInfo) => {
+      try {
+        if (provider._id) {
+          const response = await providerService.getProviderById(provider._id);
+          if (response.success && response.data?.provider) {
+            setSelectedProvider(response.data.provider);
+            setModalOpen(true);
+          } else {
+            setSelectedProvider(provider);
+            setModalOpen(true);
+          }
+        } else {
+          setSelectedProvider(provider);
+          setModalOpen(true);
+        }
+      } catch (error) {
+        console.error("Error fetching provider details:", error);
+        setSelectedProvider(provider);
+        setModalOpen(true);
+      }
+    },
+    []
+  );
+
+  const getProviderFromWorkPost = useCallback(
+    (post: WorkPostType): ProviderInfo | null => {
+      if (typeof post.providerId === "object" && post.providerId !== null) {
+        const provider = post.providerId as any;
+        return {
+          _id: provider._id || "",
+          name: provider.name || "",
+          email: provider.email || "",
+          phone: provider.phone || "",
+          address: provider.address || "",
+          experience_years: provider.experience_years || 0,
+          skills: provider.skills || [],
+          availability_status: provider.availability_status || "Unavailable",
+          profileImage: provider.profileImage,
+          rating: provider.rating,
+        };
+      }
+      return null;
+    },
+    []
+  );
+
+  const cleanDescription = useCallback((description: string) => {
+    return description
+      .replace(/completed/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }, []);
+
+  const handleClearFilters = useCallback(() => {
+    setSearchTerm("");
+    setSelectedCategory("all");
+  }, []);
+
+  const handleImageError = useCallback(
+    (e: React.SyntheticEvent<HTMLImageElement>) => {
+      const target = e.currentTarget;
+      target.src = "/placeholder-image.svg";
+      target.alt = "Image not available";
+    },
+    []
+  );
 
   return (
-    <main className="pt-16">
+    <main className="">
       <HeroSection
         title="Welcome to WorkBond"
         subtitle="Connecting talented professionals with forward-thinking companies. WorkBond bridges the gap between exceptional talent and meaningful opportunities, creating lasting professional relationships that drive success."
-        primaryAction={{ label: "Get Started", href: "/auth/register/customer" }}
+        primaryAction={{
+          label: "Get Started",
+          href: "/auth/register/customer",
+        }}
         secondaryAction={{ label: "Learn More", href: "#services" }}
         className="mb-12"
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" id="services">
+      <div
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+        id="services"
+      >
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-foreground mb-6">
-            Our Services
+            {isCustomerLoggedIn ? "Provider Work Showcases" : "Our Services"}
           </h2>
 
-            <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
+          <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
             <Input
               type="text"
-              placeholder="Search services..."
+              placeholder={
+                isCustomerLoggedIn
+                  ? "Search work posts..."
+                  : "Search services..."
+              }
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="md:w-1/2"
+              aria-label="Search input"
             />
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="px-4 py-2 border rounded-md md:w-1/4 bg-background text-foreground border-input"
+              aria-label="Category filter"
             >
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
@@ -180,26 +259,103 @@ export default function Home() {
             </select>
             <Button
               variant="outline"
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedCategory("all");
-              }}
+              onClick={handleClearFilters}
               aria-label="Clear search and filters"
             >
               Clear
             </Button>
           </div>
 
-          {loading ? (
+          {loading || authLoading ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">Loading services...</p>
+              <p className="text-muted-foreground">
+                {isCustomerLoggedIn
+                  ? "Loading work posts..."
+                  : "Loading services..."}
+              </p>
             </div>
+          ) : isCustomerLoggedIn ? (
+            filteredWorkPosts.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No work posts found</p>
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {filteredWorkPosts.map((post) => {
+                  const provider = getProviderFromWorkPost(post);
+                  const cleanedDescription = post.description
+                    ? cleanDescription(post.description)
+                    : "";
+
+                  return (
+                    <Card
+                      key={post._id}
+                      className="hover:shadow-lg transition-shadow flex flex-col h-full overflow-hidden"
+                    >
+                      <div className="grid grid-cols-2 gap-2 p-3 sm:p-4">
+                        <div className="relative overflow-hidden rounded-md aspect-square">
+                          <img
+                            src={post.beforeImage}
+                            alt={`Before: ${post.title}`}
+                            className="w-full h-full object-cover rounded-md"
+                            onError={handleImageError}
+                            loading="lazy"
+                          />
+                        </div>
+                        <div className="relative overflow-hidden rounded-md aspect-square">
+                          <img
+                            src={post.afterImage}
+                            alt={`After: ${post.title}`}
+                            className="w-full h-full object-cover rounded-md"
+                            onError={handleImageError}
+                            loading="lazy"
+                          />
+                        </div>
+                      </div>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <span className="capitalize truncate text-base sm:text-lg">
+                            {post.title}
+                          </span>
+                          {post.category &&
+                            post.category.toLowerCase() !== "general" && (
+                              <Badge
+                                variant="secondary"
+                                className="whitespace-nowrap w-fit"
+                              >
+                                {post.category}
+                              </Badge>
+                            )}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex-1 flex flex-col justify-between pt-0">
+                        {cleanedDescription && (
+                          <p className="text-sm sm:text-base text-muted-foreground mb-4 line-clamp-3">
+                            {cleanedDescription}
+                          </p>
+                        )}
+                        {provider && (
+                          <div className="border-t pt-3 sm:pt-4 mt-auto">
+                            <p className="text-xs sm:text-sm text-muted-foreground mb-1">
+                              Provider
+                            </p>
+                            <p className="text-sm sm:text-base font-medium">
+                              {provider.name}
+                            </p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )
           ) : filteredServices.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No services found</p>
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {filteredServices.map((service) => (
                 <Card
                   key={service._id}
@@ -207,10 +363,12 @@ export default function Home() {
                 >
                   <div className="h-48 w-full bg-muted relative overflow-hidden">
                     {service.icon ? (
-                      <img 
-                        src={service.icon} 
-                        alt={service.name} 
+                      <img
+                        src={service.icon}
+                        alt={service.name}
                         className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        onError={handleImageError}
+                        loading="lazy"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -219,17 +377,23 @@ export default function Home() {
                     )}
                   </div>
                   <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span className="capitalize truncate pr-2">{service.name}</span>
-                      <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded whitespace-nowrap">
+                    <CardTitle className="flex items-center justify-between gap-2">
+                      <span className="capitalize truncate">
+                        {service.name}
+                      </span>
+                      <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded whitespace-nowrap shrink-0">
                         {service.category}
                       </span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col justify-between">
-                    <p className="text-muted-foreground mb-4 line-clamp-3">{service.description}</p>
+                    <p className="text-muted-foreground mb-4 line-clamp-3">
+                      {service.description}
+                    </p>
                     <div className="border-t pt-4 mt-auto">
-                      <p className="text-sm text-muted-foreground mb-1">Pricing</p>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Pricing
+                      </p>
                       <p className="text-lg font-bold text-secondary truncate">
                         {getPriceDisplay(service)}
                       </p>
@@ -240,92 +404,13 @@ export default function Home() {
             </div>
           )}
         </div>
-
-        {/* Price Lists Section
-        <div className="mt-16">
-          <h2 className="text-3xl font-bold text-foreground mb-6">
-            Service Pricing
-          </h2>
-
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <Input
-              type="text"
-              placeholder="Search by service name..."
-              value={priceListSearch}
-              onChange={(e) => setPriceListSearch(e.target.value)}
-              className="md:w-1/2"
-            />
-            <select
-              value={priceTypeFilter}
-              onChange={(e) => setPriceTypeFilter(e.target.value)}
-              className="px-4 py-2 border rounded-md md:w-1/4 bg-background text-foreground border-input"
-            >
-              <option value="all">All Price Types</option>
-              <option value="fixed">Fixed Price</option>
-              <option value="per_unit">Per Unit</option>
-              <option value="range">Price Range</option>
-            </select>
-          </div>
-
-          {loading ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Loading price lists...</p>
-            </div>
-          ) : filteredPriceLists.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No price lists found</p>
-            </div>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredPriceLists.map((priceList: any) => {
-                const service =
-                  typeof priceList.service_id === "object"
-                    ? priceList.service_id
-                    : services.find((s) => s._id === priceList.service_id);
-
-                return (
-                  <Card
-                    key={priceList._id}
-                    className="hover:shadow-lg transition-shadow"
-                  >
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <span className="capitalize">
-                          {service?.name || "Service"}
-                        </span>
-                        <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded">
-                          {priceList.price_type.replace("_", " ")}
-                        </span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="mb-4">
-                        <p className="text-sm text-muted-foreground mb-1">Category</p>
-                        <p className="text-sm font-medium">
-                          {service?.category || "N/A"}
-                        </p>
-                      </div>
-                      <div className="border-t pt-4">
-                        <p className="text-sm text-muted-foreground mb-1">Price</p>
-                        <p className="text-2xl font-bold text-secondary">
-                          {formatPriceListPrice(priceList)}
-                        </p>
-                      </div>
-                      {priceList.description && (
-                        <div className="mt-4 pt-4 border-t">
-                          <p className="text-sm text-muted-foreground">
-                            {priceList.description}
-                          </p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div> */}
       </div>
+
+      <ProviderDetailsModal
+        provider={selectedProvider}
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+      />
     </main>
   );
 }

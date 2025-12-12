@@ -250,7 +250,7 @@ export default function ProviderDashboard() {
         </Card>
       </div>
 
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">Available Job Posts</h2>
           <Link href="/provider/job-posts">
@@ -315,8 +315,8 @@ export default function ProviderDashboard() {
             ))}
           </div>
         )}
-      </div>
-
+      </div> */}
+{/* 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -354,7 +354,7 @@ export default function ProviderDashboard() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
     </>
   );
 }
