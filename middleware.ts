@@ -2,12 +2,22 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get("token")?.value || request.cookies.get("access_token")?.value;
+  const token =
+    request.cookies.get("token")?.value ||
+    request.cookies.get("access_token")?.value;
   const { pathname } = request.nextUrl;
 
   // Define public routes
-  const publicRoutes = ["/", "/auth/login", "/auth/register", "/services", "/pricelists"];
-  const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith(route + "/"));
+  const publicRoutes = [
+    "/",
+    "/auth/login",
+    "/auth/register",
+    "/services",
+    "/pricelists",
+  ];
+  const isPublicRoute = publicRoutes.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
 
   if (isPublicRoute) {
     return NextResponse.next();
@@ -16,7 +26,7 @@ export function middleware(request: NextRequest) {
   // Protected routes
   if (!token) {
     const loginUrl = new URL("/auth/login", request.url);
-    // return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(loginUrl);
   }
 
   // Role-based access
@@ -24,15 +34,15 @@ export function middleware(request: NextRequest) {
   if (userCookie) {
     try {
       const user = JSON.parse(userCookie);
-      
+
       // Admin routes
-      if (pathname.startsWith("/workbond/admin")) {
+      if (pathname.startsWith("/admin")) {
         if (user.role !== "admin") {
           const homeUrl = new URL("/", request.url);
           return NextResponse.redirect(homeUrl);
         }
       }
-      
+
       // Provider routes
       if (pathname.startsWith("/provider")) {
         if (user.role !== "provider") {
@@ -40,7 +50,7 @@ export function middleware(request: NextRequest) {
           return NextResponse.redirect(homeUrl);
         }
       }
-      
+
       // Customer routes
       if (pathname.startsWith("/customer")) {
         if (user.role !== "customer") {
@@ -71,4 +81,3 @@ export const config = {
     "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
-
