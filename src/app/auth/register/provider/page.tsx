@@ -24,8 +24,9 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, X } from "lucide-react";
 import { authService } from "@/services/auth.service";
+import { SKILLS_LIST } from "@/lib/constants";
 
 const registerProviderSchema = z
   .object({
@@ -50,7 +51,7 @@ const registerProviderSchema = z
       .refine((val) => !isNaN(Number(val)) && Number(val) >= 1, {
         message: "Experience must be a positive number",
       }),
-    skills: z.string().min(2, "At least one skill is required"),
+    skills: z.array(z.string()).min(1, "At least one skill is required"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -71,23 +72,22 @@ export default function RegisterProviderPage() {
       phone: "",
       address: "",
       experience_years: "",
-      skills: "",
+      skills: [],
       confirmPassword: "",
     },
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [selectedSkill, setSelectedSkill] = useState("");
 
   const onSubmit = async (data: RegisterProviderFormValues) => {
     try {
-      const skillsArray = data.skills.split(",").map((s) => s.trim());
-
       const result = await authService.register({
         ...data,
         experience_years: Number(data.experience_years),
         role: "provider",
-        skills: skillsArray,
+        skills: data.skills,
       });
 
       if (!result.success) {
@@ -105,11 +105,28 @@ export default function RegisterProviderPage() {
     }
   };
 
+  const addSkill = () => {
+    if (!selectedSkill) return;
+    const currentSkills = form.getValues("skills");
+    if (!currentSkills.includes(selectedSkill)) {
+      form.setValue("skills", [...currentSkills, selectedSkill]);
+    }
+    setSelectedSkill("");
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    const currentSkills = form.getValues("skills");
+    form.setValue(
+      "skills",
+      currentSkills.filter((s) => s !== skillToRemove)
+    );
+  };
+
   return (
     <div className="container mx-auto px-4 py-12 flex justify-center items-center min-h-[calc(100vh-200px)]">
-      <div className="w-full max-w-2xl space-y-8">
+      <div className="w-full max-w-md mx-auto p-6 bg-background rounded-lg border border-white shadow-[0_2px_6px_0_rgba(0,0,0,0.1)] space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Become a Provider</h1>
+          <h1 className="text-3xl font-bold text-[#0B204C]">Become a Provider</h1>
           <p className="text-muted-foreground mt-2">
             Join our network of professionals.
           </p>
@@ -117,60 +134,58 @@ export default function RegisterProviderPage() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="name@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone</FormLabel>
-                    <FormControl>
-                      <Input placeholder="+1234567890" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="experience_years"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Experience (Years)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="0" placeholder="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="John Doe" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="name@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl>
+                    <Input placeholder="+1234567890" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="experience_years"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Experience (Years)</FormLabel>
+                  <FormControl>
+                    <Input type="number" min="0" placeholder="0" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="address"
@@ -199,22 +214,48 @@ export default function RegisterProviderPage() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="skills"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Skills (comma separated)</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Plumbing, Electrical, Carpentry"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
+            <div className="space-y-2">
+              <FormLabel>Skills</FormLabel>
+              <div className="flex gap-2">
+                <Select value={selectedSkill} onValueChange={setSelectedSkill}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a skill" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SKILLS_LIST.map((skill) => (
+                      <SelectItem key={skill} value={skill}>
+                        {skill}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button type="button" onClick={addSkill} variant="secondary">
+                  Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {form.watch("skills").map((skill) => (
+                  <div
+                    key={skill}
+                    className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm flex items-center gap-1"
+                  >
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() => removeSkill(skill)}
+                      className="hover:text-destructive"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <FormMessage>
+                {form.formState.errors.skills?.message}
+              </FormMessage>
+            </div>
+
             <FormField
               control={form.control}
               name="password"

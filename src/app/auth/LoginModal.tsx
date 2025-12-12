@@ -107,7 +107,7 @@ export function LoginModal({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Login</DialogTitle>
+          <DialogTitle className="text-[#0B204C]">Login</DialogTitle>
           <DialogDescription>
             Enter your credentials to access your account.
           </DialogDescription>

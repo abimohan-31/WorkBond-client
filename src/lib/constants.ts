@@ -1,0 +1,30 @@
+export const CATEGORIES = [
+  "Cleaning",
+  "Plumbing",
+  "Electrical",
+  "Painting",
+  "Carpentry",
+  "Gardening",
+  "Moving",
+  "Handyman",
+  "Other",
+];
+
+export const SKILLS_LIST = [
+  "General Cleaning",
+  "Deep Cleaning",
+  "Pipe Repair",
+  "Leak Fix",
+  "Wiring",
+  "Lighting Installation",
+  "Interior Painting",
+  "Exterior Painting",
+  "Furniture Assembly",
+  "Woodwork",
+  "Lawn Mowing",
+  "Landscaping",
+  "Heavy Lifting",
+  "Packing",
+  "General Repairs",
+  "Maintenance",
+];

@@ -123,9 +123,9 @@ export default function RegisterCustomerPage() {
 
   return (
     <div className="container mx-auto px-4 py-12 flex justify-center items-center min-h-[calc(100vh-200px)]">
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-md mx-auto p-6 bg-background rounded-lg border border-white shadow-[0_2px_6px_0_rgba(0,0,0,0.1)] space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Sign Up as Customer</h1>
+          <h1 className="text-3xl font-bold text-[#0B204C]">Sign Up as Customer</h1>
           <p className="text-muted-foreground mt-2">
             Create an account to book services.
           </p>
@@ -164,9 +164,9 @@ export default function RegisterCustomerPage() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone (Optional)</FormLabel>
+                  <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <Input placeholder="+1234567890" {...field} />
+                    <Input placeholder="0771234567" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

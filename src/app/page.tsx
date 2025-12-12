@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { serviceService } from "@/services/service.service";
@@ -158,7 +159,7 @@ export default function Home() {
             Our Services
           </h2>
 
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
             <Input
               type="text"
               placeholder="Search services..."
@@ -177,6 +178,16 @@ export default function Home() {
                 </option>
               ))}
             </select>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchTerm("");
+                setSelectedCategory("all");
+              }}
+              aria-label="Clear search and filters"
+            >
+              Clear
+            </Button>
           </div>
 
           {loading ? (

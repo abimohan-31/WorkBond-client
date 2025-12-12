@@ -7,7 +7,7 @@ import { serviceService } from "@/services/service.service";
 import { JobPostType } from "@/types/jobPost";
 import { ServiceType } from "@/types/service";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -36,7 +36,9 @@ export default function CustomerJobPostsPage() {
     location: "",
   });
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
+
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [formCategory, setFormCategory] = useState("all");
 
   useEffect(() => {
     if (user && user.role === "customer") {
@@ -151,6 +153,22 @@ export default function CustomerJobPostsPage() {
                 />
               </div>
               <div>
+                <label className="text-sm font-medium">Category</label>
+                <select
+                  className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input mb-4"
+                  value={formCategory}
+                  onChange={(e) => {
+                    setFormCategory(e.target.value);
+                    setNewJob({ ...newJob, service_id: "" });
+                  }}
+                >
+                  <option value="all">All Categories</option>
+                  {Array.from(new Set(services.map(s => s.category))).map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="text-sm font-medium">Service Type *</label>
                 <select
                   className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
@@ -159,95 +177,19 @@ export default function CustomerJobPostsPage() {
                 >
                   <option value="">Select a service</option>
                   
-                  <optgroup label="Plumbing">
-                    {services
-                      .filter(s => s.category === "Plumbing")
-                      .map(service => (
-                        <option key={service._id} value={service._id}>
-                          {service.name}
-                        </option>
-                      ))}
-                  </optgroup>
-
-                  <optgroup label="Gardening">
-                    {services
-                      .filter(s => s.category === "Gardening")
-                      .map(service => (
-                        <option key={service._id} value={service._id}>
-                          {service.name}
-                        </option>
-                      ))}
-                  </optgroup>
-
-                  <optgroup label="Electrical">
-                    {services
-                      .filter(s => s.category === "Electrical")
-                      .map(service => (
-                        <option key={service._id} value={service._id}>
-                          {service.name}
-                        </option>
-                      ))}
-                  </optgroup>
-
-                  <optgroup label="Painting">
-                    {services
-                      .filter(s => s.category === "Painting")
-                      .map(service => (
-                        <option key={service._id} value={service._id}>
-                          {service.name}
-                        </option>
-                      ))}
-                  </optgroup>
-
-                  <optgroup label="Cleaning">
-                    {services
-                      .filter(s => s.category === "Cleaning")
-                      .map(service => (
-                        <option key={service._id} value={service._id}>
-                          {service.name}
-                        </option>
-                      ))}
-                  </optgroup>
-
-                  <optgroup label="Carpentry">
-                    {services
-                      .filter(s => s.category === "Carpentry")
-                      .map(service => (
-                        <option key={service._id} value={service._id}>
-                          {service.name}
-                        </option>
-                      ))}
-                  </optgroup>
-
-                  <optgroup label="Handyman">
-                    {services
-                      .filter(s => s.category === "Handyman")
-                      .map(service => (
-                        <option key={service._id} value={service._id}>
-                          {service.name}
-                        </option>
-                      ))}
-                  </optgroup>
-
-                  <optgroup label="Moving">
-                    {services
-                      .filter(s => s.category === "Moving")
-                      .map(service => (
-                        <option key={service._id} value={service._id}>
-                          {service.name}
-                        </option>
-                      ))}
-                  </optgroup>
-
-                  <optgroup label="Other">
-                    {services
-                      .filter(s => s.category === "Other")
-                      .map(service => (
-                        <option key={service._id} value={service._id}>
-                          {service.name}
-                        </option>
-                      ))}
-                  </optgroup>
+                  {Array.from(new Set(services.map(s => s.category)))
+                    .filter(cat => formCategory === "all" || cat === formCategory)
+                    .map(category => (
+                    <optgroup key={category} label={category}>
+                      {services
+                        .filter(s => s.category === category)
+                        .map(service => (
+                          <option key={service._id} value={service._id}>
+                            {service.name}
+                          </option>
+                        ))}
+                    </optgroup>
+                  ))}
                 </select>
               </div>
               <div>
@@ -348,9 +290,6 @@ export default function CustomerJobPostsPage() {
                       {job.location && ` • ${job.location}`}
                     </p>
                   </div>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(job._id)}>
-                    Delete
-                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
@@ -410,6 +349,11 @@ export default function CustomerJobPostsPage() {
                   </div>
                 )}
               </CardContent>
+              <CardFooter className="flex justify-end">
+                <Button variant="destructive" size="sm" onClick={() => handleDelete(job._id)}>
+                  Delete
+                </Button>
+              </CardFooter>
             </Card>
           ))}
         </div>
