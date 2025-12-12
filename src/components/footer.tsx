@@ -31,8 +31,8 @@ export function Footer() {
 
   // Full footer for public pages
   return (
-    <footer className="border-t bg-background py-8">
-      <div className="container mx-auto px-4">
+    <footer className="border-t bg-secondary py-8">
+      <div className="container mx-auto px-4" >
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 m-5">
           <div className="space-y-4">
             <h3 className="font-bold text-lg">WorkBond</h3>

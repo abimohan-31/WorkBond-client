@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -27,28 +28,41 @@ export function HeroSection({
   primaryAction,
   secondaryAction,
   backgroundImage,
-  sideImage,
   className,
   children,
 }: HeroSectionProps) {
-  if (sideImage) {
-    return (
-      <section
-        className={cn(
-          "relative flex min-h-[500px] items-center justify-center",
-          "bg-gradient-to-br from-primary/10 via-background to-secondary/10",
-          className
-        )}
-      >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div className="space-y-6 animate-in fade-in slide-in-from-left duration-1000">
-              <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-                <span className="block text-foreground">{title}</span>
+  return (
+    <section
+      className={cn(
+        "relative flex min-h-[480px] sm:min-h-[560px] md:min-h-[700px] items-center justify-center w-full overflow-hidden",
+        className
+      )}
+    >
+      {backgroundImage && (
+        <>
+          <div
+            className="absolute inset-0 w-full h-full"
+            style={{
+              backgroundImage: `url(${backgroundImage})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          />
+          <div className="absolute inset-0 bg-black/40" />
+        </>
+      )}
+
+      <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+        <div className="container mx-auto max-w-4xl">
+          <Card className="bg-card/40 backdrop-blur-sm border-border/50 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <CardContent className="p-6 sm:p-8 md:p-12 space-y-5 sm:space-y-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-secondary">
+                {title}
               </h1>
 
               {subtitle && (
-                <p className="text-lg text-muted-foreground sm:text-xl max-w-xl">
+                <p className="text-base sm:text-lg md:text-xl text-muted max-w-2xl">
                   {subtitle}
                 </p>
               )}
@@ -79,79 +93,9 @@ export function HeroSection({
               </div>
 
               {children}
-            </div>
-
-            <div className="relative w-full h-[400px] lg:h-[500px] rounded-lg overflow-hidden animate-in fade-in slide-in-from-right duration-1000">
-              <Image
-                src={sideImage}
-                alt="Professional handshake"
-                fill
-                className="object-cover grayscale"
-                priority
-              />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
-      </section>
-    );
-  }
-
-  return (
-    <section
-      className={cn(
-        "relative flex min-h-[500px] flex-col items-center justify-center text-center px-4 py-20",
-        "bg-gradient-to-br from-primary/10 via-background to-secondary/10",
-        className
-      )}
-      style={
-        backgroundImage
-          ? {
-              backgroundImage: `url(${backgroundImage})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }
-          : undefined
-      }
-    >
-      {backgroundImage && (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
-      )}
-
-      <div className="relative z-10 max-w-4xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-          <span className="block text-foreground">{title}</span>
-        </h1>
-
-        {subtitle && (
-          <p className="mx-auto max-w-2xl text-lg text-muted-foreground sm:text-xl">
-            {subtitle}
-          </p>
-        )}
-
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-          {primaryAction && (
-            <Button
-              asChild
-              size="lg"
-              className="h-12 px-8 text-lg rounded-full"
-            >
-              <Link href={primaryAction.href}>{primaryAction.label}</Link>
-            </Button>
-          )}
-
-          {secondaryAction && (
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="h-12 px-8 text-lg rounded-full"
-            >
-              <Link href={secondaryAction.href}>{secondaryAction.label}</Link>
-            </Button>
-          )}
-        </div>
-
-        {children}
       </div>
     </section>
   );

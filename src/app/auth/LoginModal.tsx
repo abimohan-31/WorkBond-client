@@ -80,7 +80,7 @@ export function LoginModal({
 
       // Get token from response (backend may return it or store in httpOnly cookie)
       const token = result.data.token || "";
-      
+
       // Login function accepts token and userData
       await login(token, result.data.user);
       setOpen(false);
@@ -129,7 +129,7 @@ export function LoginModal({
                         <SelectValue placeholder="Select your role" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="z-[101]">
                       <SelectItem value="customer">Customer</SelectItem>
                       <SelectItem value="provider">Provider</SelectItem>
                     </SelectContent>

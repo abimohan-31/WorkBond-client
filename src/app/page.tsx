@@ -220,7 +220,7 @@ export default function Home() {
           href: "/auth/register/customer",
         }}
         secondaryAction={{ label: "Learn More", href: "#services" }}
-        sideImage="https://images.pexels.com/photos/6077647/pexels-photo-6077647.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop"
+        backgroundImage="https://images.pexels.com/photos/6077647/pexels-photo-6077647.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop"
         className="mb-12"
       />
 
@@ -243,13 +243,13 @@ export default function Home() {
               }
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="md:w-1/2"
+              className="w-full md:w-1/2"
               aria-label="Search input"
             />
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border rounded-md md:w-1/4 bg-background text-foreground border-input"
+              className="w-full md:w-1/4 px-4 py-2 border rounded-md bg-background text-foreground border-input"
               aria-label="Category filter"
             >
               {categories.map((cat) => (
@@ -260,6 +260,7 @@ export default function Home() {
             </select>
             <Button
               variant="secondary"
+              className="w-full md:w-auto"
               onClick={handleClearFilters}
               aria-label="Clear search and filters"
             >

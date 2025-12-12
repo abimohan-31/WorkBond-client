@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -123,216 +124,235 @@ export default function RegisterProviderPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 flex justify-center items-center min-h-[calc(100vh-200px)]">
-      <div className="w-full max-w-md mx-auto p-6 bg-background rounded-lg border border-white shadow-[0_2px_6px_0_rgba(0,0,0,0.1)] space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-[#0B204C]">Become a Provider</h1>
-          <p className="text-muted-foreground mt-2">
-            Join our network of professionals.
-          </p>
-        </div>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-secondary/40 via-background to-primary/40 px-4 py-10 sm:px-6 lg:px-8">
+      <div className="w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-xl flex flex-col lg:flex-row">
+        <div className="w-full lg:w-1/2 p-8 sm:p-10 lg:p-12 space-y-8">
+          <div className="text-center lg:text-left space-y-2">
+            <h1 className="text-3xl font-bold text-[#0B204C]">
+              Become a Provider
+            </h1>
+            <p className="text-muted-foreground">
+              Join our network of trusted professionals and grow with WorkBond.
+            </p>
+          </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="John Doe" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone</FormLabel>
-                  <FormControl>
-                    <Input placeholder="+1234567890" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="experience_years"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Experience (Years)</FormLabel>
-                  <FormControl>
-                    <Input type="number" min="0" placeholder="0" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Address</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your location" />
-                      </SelectTrigger>
+                      <Input placeholder="Work Bond" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="workbond@gmail.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone</FormLabel>
+                    <FormControl>
+                      <Input placeholder="0771234567" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="experience_years"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Experience (Years)</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" placeholder="0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select your location" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Vavuniya">Vavuniya</SelectItem>
+                        <SelectItem value="Killinochchi">
+                          Killinochchi
+                        </SelectItem>
+                        <SelectItem value="Mannar">Mannar</SelectItem>
+                        <SelectItem value="Jaffna">Jaffna</SelectItem>
+                        <SelectItem value="Mullaitivu">Mullaitivu</SelectItem>
+                        <SelectItem value="Others">Others</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="space-y-2">
+                <FormLabel>Skills</FormLabel>
+                <div className="flex gap-2">
+                  <Select
+                    value={selectedSkill}
+                    onValueChange={setSelectedSkill}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a skill" />
+                    </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Vavuniya">Vavuniya</SelectItem>
-                      <SelectItem value="Killinochchi">Killinochchi</SelectItem>
-                      <SelectItem value="Mannar">Mannar</SelectItem>
-                      <SelectItem value="Jaffna">Jaffna</SelectItem>
-                      <SelectItem value="Mullaitivu">Mullaitivu</SelectItem>
-                      <SelectItem value="Others">Others</SelectItem>
+                      {SKILLS_LIST.map((skill) => (
+                        <SelectItem key={skill} value={skill}>
+                          {skill}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="space-y-2">
-              <FormLabel>Skills</FormLabel>
-              <div className="flex gap-2">
-                <Select value={selectedSkill} onValueChange={setSelectedSkill}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a skill" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SKILLS_LIST.map((skill) => (
-                      <SelectItem key={skill} value={skill}>
-                        {skill}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button type="button" onClick={addSkill} variant="secondary">
-                  Add
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {form.watch("skills").map((skill) => (
-                  <div
-                    key={skill}
-                    className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm flex items-center gap-1"
-                  >
-                    {skill}
-                    <button
-                      type="button"
-                      onClick={() => removeSkill(skill)}
-                      className="hover:text-destructive"
+                  <Button type="button" onClick={addSkill} variant="secondary">
+                    Add
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {form.watch("skills").map((skill) => (
+                    <div
+                      key={skill}
+                      className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm flex items-center gap-1"
                     >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
+                      {skill}
+                      <button
+                        type="button"
+                        onClick={() => removeSkill(skill)}
+                        className="hover:text-destructive"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <FormMessage>
+                  {form.formState.errors.skills?.message}
+                </FormMessage>
               </div>
-              <FormMessage>
-                {form.formState.errors.skills?.message}
-              </FormMessage>
-            </div>
 
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="******"
-                        {...field}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={showConfirmPassword ? "text" : "password"}
-                        placeholder="******"
-                        {...field}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
-                      >
-                        {showConfirmPassword ? (
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full">
-              Register as Provider
-            </Button>
-          </form>
-        </Form>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="******"
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="******"
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full">
+                Register as Provider
+              </Button>
+            </form>
+          </Form>
 
-        <div className="text-center text-sm">
-          Already have an account?{" "}
-          <Link href="/auth/login" className="underline hover:text-primary">
-            Log in
-          </Link>
+          <div className="text-center text-sm lg:text-center">
+            Already have an account?{" "}
+            <Link href="/auth/login" className="underline hover:text-primary">
+              Log in
+            </Link>
+          </div>
+        </div>
+
+        <div className="relative w-full lg:w-1/2 h-64 sm:h-80 lg:h-auto">
+          <Image
+            src="https://images.pexels.com/photos/13443796/pexels-photo-13443796.jpeg?auto=compress&cs=tinysrgb&w=1600"
+            alt="Provider registration"
+            fill
+            priority
+            className="object-cover"
+          />
         </div>
       </div>
     </div>

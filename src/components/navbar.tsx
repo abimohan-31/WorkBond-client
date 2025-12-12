@@ -22,13 +22,13 @@ export function Navbar() {
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-      <div className="container mx-10 px-4 h-20 flex items-center justify-between">
+      <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         <div className="flex items-center">
           <Link href="/" className="font-bold text-xl">
             <Image
               src="/noBgColor.svg"
-              width={200}
-              height={150}
+              width={250}
+              height={200}
               alt="WorkBond Logo"
             />
           </Link>

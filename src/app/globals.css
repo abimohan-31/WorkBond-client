@@ -183,4 +183,22 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Add cursor pointer to all buttons and clickable links */
+  button,
+  [role="button"],
+  a[href],
+  input[type="submit"],
+  input[type="button"],
+  label[for],
+  [onclick],
+  [tabindex="0"] {
+    @apply cursor-pointer;
+  }
+  
+  /* Ensure select items are clickable */
+  [data-slot="select-item"],
+  [data-slot="select-trigger"] {
+    @apply cursor-pointer;
+  }
 }
