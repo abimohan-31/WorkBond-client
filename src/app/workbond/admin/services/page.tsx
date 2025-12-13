@@ -12,6 +12,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -50,6 +61,8 @@ export default function AdminServicesPage() {
   });
   const [editingService, setEditingService] = useState<ServiceType | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && user.role === "admin") {
@@ -189,386 +202,409 @@ export default function AdminServicesPage() {
     setIsEditDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this service?")) return;
+  const handleDelete = async () => {
+    if (!serviceToDelete) return;
 
     try {
-      await serviceService.delete(id);
+      await serviceService.delete(serviceToDelete);
       toast.success("Service deleted");
       loadServices();
     } catch (error: any) {
       console.error("Error deleting service:", error);
-      toast.error("Failed to delete service");
+      toast.error(error.response?.data?.message || "Failed to delete service");
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setServiceToDelete(null);
     }
   };
 
-  if (!user || user.role !== "admin") {
-    return <div className="p-8">Access Denied</div>;
-  }
+  const openDeleteDialog = (id: string) => {
+    setServiceToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-foreground">Manage Services</h1>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>Add New Service</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Create New Service</DialogTitle>
-              <DialogDescription>
-                Add a new service to the platform
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="flex gap-4 items-start">
-                <div className="w-1/3">
-                  <label className="text-sm font-medium text-foreground block mb-2">Service Icon</label>
-                  <div className="border-2 border-dashed rounded-lg p-4 text-center hover:bg-muted/50 transition-colors relative">
-                    {newService.icon ? (
-                      <div className="relative aspect-square w-full">
-                        <img 
-                          src={newService.icon} 
-                          alt="Service icon" 
-                          className="w-full h-full object-cover rounded-md"
-                        />
-                        <button
-                          onClick={() => setNewService({ ...newService, icon: "" })}
-                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 w-6 h-6 flex items-center justify-center text-xs"
-                        >
-                          ×
-                        </button>
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Manage Services</h1>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>Add New Service</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Create New Service</DialogTitle>
+                  <DialogDescription>
+                    Add a new service to the platform
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="flex gap-4 items-start">
+                    <div className="w-1/3">
+                      <label className="text-sm font-medium text-foreground block mb-2">Service Icon</label>
+                      <div className="border-2 border-dashed rounded-lg p-4 text-center hover:bg-muted/50 transition-colors relative">
+                        {newService.icon ? (
+                          <div className="relative aspect-square w-full">
+                            <img 
+                              src={newService.icon} 
+                              alt="Service icon" 
+                              className="w-full h-full object-cover rounded-md"
+                            />
+                            <button
+                              onClick={() => setNewService({ ...newService, icon: "" })}
+                              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 w-6 h-6 flex items-center justify-center text-xs"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="py-8">
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {uploading ? "Uploading..." : "Click to upload"}
+                            </p>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              disabled={uploading}
+                            />
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="py-8">
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {uploading ? "Uploading..." : "Click to upload"}
-                        </p>
+                    </div>
+                    <div className="w-2/3 space-y-4">
+                      <div>
+                        <label className="text-sm font-medium text-foreground">Service Name *</label>
                         <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          disabled={uploading}
+                          placeholder="e.g., House Cleaning"
+                          value={newService.name}
+                          onChange={(e) =>
+                            setNewService({ ...newService, name: e.target.value })
+                          }
+                          className="bg-background border-input text-foreground"
                         />
                       </div>
-                    )}
+                      <div>
+                        <label className="text-sm font-medium text-foreground">Category *</label>
+                        <select
+                          className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
+                          value={newService.category}
+                          onChange={(e) =>
+                            setNewService({ ...newService, category: e.target.value })
+                          }
+                        >
+                          {categories.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="w-2/3 space-y-4">
+                  
                   <div>
-                    <label className="text-sm font-medium text-foreground">Service Name *</label>
-                    <Input
-                      placeholder="e.g., House Cleaning"
-                      value={newService.name}
+                    <label className="text-sm font-medium text-foreground">Description *</label>
+                    <Textarea
+                      placeholder="Describe the service..."
+                      value={newService.description}
                       onChange={(e) =>
-                        setNewService({ ...newService, name: e.target.value })
+                        setNewService({
+                          ...newService,
+                          description: e.target.value,
+                        })
                       }
+                      rows={3}
                       className="bg-background border-input text-foreground"
                     />
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground">Category *</label>
-                    <select
-                      className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
-                      value={newService.category}
-                      onChange={(e) =>
-                        setNewService({ ...newService, category: e.target.value })
-                      }
-                    >
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-foreground">
+                        Base Price (LKR) *
+                      </label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={newService.base_price}
+                        onChange={(e) =>
+                          setNewService({
+                            ...newService,
+                            base_price: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="bg-background border-input text-foreground"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground">Unit *</label>
+                      <select
+                        className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
+                        value={newService.unit}
+                        onChange={(e) =>
+                          setNewService({ ...newService, unit: e.target.value })
+                        }
+                      >
+                        {units.map((unit) => (
+                          <option key={unit} value={unit}>
+                            {unit}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-foreground">Description *</label>
-                <Textarea
-                  placeholder="Describe the service..."
-                  value={newService.description}
-                  onChange={(e) =>
-                    setNewService({
-                      ...newService,
-                      description: e.target.value,
-                    })
-                  }
-                  rows={3}
-                  className="bg-background border-input text-foreground"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-foreground">
-                    Base Price (LKR) *
-                  </label>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={newService.base_price}
-                    onChange={(e) =>
-                      setNewService({
-                        ...newService,
-                        base_price: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="bg-background border-input text-foreground"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">Unit *</label>
-                  <select
-                    className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
-                    value={newService.unit}
-                    onChange={(e) =>
-                      setNewService({ ...newService, unit: e.target.value })
-                    }
-                  >
-                    {units.map((unit) => (
-                      <option key={unit} value={unit}>
-                        {unit}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsCreateDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button onClick={handleCreate} disabled={uploading}>
-                {uploading ? "Uploading..." : "Create Service"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit Service</DialogTitle>
-            <DialogDescription>
-              Update service details
-            </DialogDescription>
-          </DialogHeader>
-          {editingService && (
-            <div className="space-y-4">
-              <div className="flex gap-4 items-start">
-                <div className="w-1/3">
-                  <label className="text-sm font-medium text-foreground block mb-2">Service Icon</label>
-                  <div className="border-2 border-dashed rounded-lg p-4 text-center hover:bg-muted/50 transition-colors relative">
-                    {editingService.icon ? (
-                      <div className="relative aspect-square w-full">
-                        <img 
-                          src={editingService.icon} 
-                          alt="Service icon" 
-                          className="w-full h-full object-cover rounded-md"
-                        />
-                        <button
-                          onClick={() => setEditingService({ ...editingService, icon: "" })}
-                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 w-6 h-6 flex items-center justify-center text-xs"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="py-8">
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {uploading ? "Uploading..." : "Click to upload"}
-                        </p>
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleEditImageUpload}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          disabled={uploading}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="w-2/3 space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-foreground">Service Name *</label>
-                    <Input
-                      placeholder="e.g., House Cleaning"
-                      value={editingService.name}
-                      onChange={(e) =>
-                        setEditingService({ ...editingService, name: e.target.value })
-                      }
-                      className="bg-background border-input text-foreground"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground">Category *</label>
-                    <select
-                      className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
-                      value={editingService.category}
-                      onChange={(e) =>
-                        setEditingService({ ...editingService, category: e.target.value })
-                      }
-                    >
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-foreground">Description *</label>
-                <Textarea
-                  placeholder="Describe the service..."
-                  value={editingService.description}
-                  onChange={(e) =>
-                    setEditingService({
-                      ...editingService,
-                      description: e.target.value,
-                    })
-                  }
-                  rows={3}
-                  className="bg-background border-input text-foreground"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-foreground">
-                    Base Price (LKR) *
-                  </label>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={editingService.base_price}
-                    onChange={(e) =>
-                      setEditingService({
-                        ...editingService,
-                        base_price: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="bg-background border-input text-foreground"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">Unit *</label>
-                  <select
-                    className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
-                    value={editingService.unit}
-                    onChange={(e) =>
-                      setEditingService({ ...editingService, unit: e.target.value })
-                    }
-                  >
-                    {units.map((unit) => (
-                      <option key={unit} value={unit}>
-                        {unit}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsEditDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleUpdate} disabled={uploading}>
-              {uploading ? "Uploading..." : "Update Service"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {loading ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Loading services...</p>
-        </div>
-      ) : serviceList.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <p className="text-muted-foreground mb-4">No services created yet</p>
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
-              Create First Service
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {serviceList.map((service) => (
-            <Card key={service._id} className="overflow-hidden">
-              <div className="aspect-video w-full bg-muted relative overflow-hidden">
-                {service.icon ? (
-                  <img 
-                    src={service.icon} 
-                    alt={service.name} 
-                    className="w-full h-full object-cover transition-transform hover:scale-105"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                    No Image
-                  </div>
-                )}
-                <div className="absolute top-2 right-2">
-                  <StatusBadge status={service.isActive ? "active" : "inactive"} />
-                </div>
-              </div>
-              <CardHeader>
-                <CardTitle className="capitalize text-foreground">{service.name}</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {service.category}
-                </p>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
-                  {service.description}
-                </p>
-                <div className="border-t pt-3 mb-3">
-                  <p className="text-sm text-muted-foreground">Base Price</p>
-                  <p className="text-lg font-bold text-primary">
-                    LKR {service.base_price}/{service.unit}
-                  </p>
-                </div>
-                <div className="flex gap-2">
+                <DialogFooter>
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => openEditDialog(service)}
+                    onClick={() => setIsCreateDialogOpen(false)}
                   >
-                    <Pencil className="w-4 h-4 mr-2" />
-                    Edit
+                    Cancel
                   </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => handleDelete(service._id)}
-                  >
-                    Delete
+                  <Button onClick={handleCreate} disabled={uploading}>
+                    {uploading ? "Uploading..." : "Create Service"}
                   </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+          
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Edit Service</DialogTitle>
+                <DialogDescription>
+                  Update service details
+                </DialogDescription>
+              </DialogHeader>
+              {editingService && (
+                <div className="space-y-4">
+                  <div className="flex gap-4 items-start">
+                    <div className="w-1/3">
+                      <label className="text-sm font-medium text-foreground block mb-2">Service Icon</label>
+                      <div className="border-2 border-dashed rounded-lg p-4 text-center hover:bg-muted/50 transition-colors relative">
+                        {editingService.icon ? (
+                          <div className="relative aspect-square w-full">
+                            <img 
+                              src={editingService.icon} 
+                              alt="Service icon" 
+                              className="w-full h-full object-cover rounded-md"
+                            />
+                            <button
+                              onClick={() => setEditingService({ ...editingService, icon: "" })}
+                              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 w-6 h-6 flex items-center justify-center text-xs"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="py-8">
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {uploading ? "Uploading..." : "Click to upload"}
+                            </p>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleEditImageUpload}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              disabled={uploading}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="w-2/3 space-y-4">
+                      <div>
+                        <label className="text-sm font-medium text-foreground">Service Name *</label>
+                        <Input
+                          placeholder="e.g., House Cleaning"
+                          value={editingService.name}
+                          onChange={(e) =>
+                            setEditingService({ ...editingService, name: e.target.value })
+                          }
+                          className="bg-background border-input text-foreground"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-foreground">Category *</label>
+                        <select
+                          className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
+                          value={editingService.category}
+                          onChange={(e) =>
+                            setEditingService({ ...editingService, category: e.target.value })
+                          }
+                        >
+                          {categories.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-foreground">Description *</label>
+                    <Textarea
+                      placeholder="Describe the service..."
+                      value={editingService.description}
+                      onChange={(e) =>
+                        setEditingService({
+                          ...editingService,
+                          description: e.target.value,
+                        })
+                      }
+                      rows={3}
+                      className="bg-background border-input text-foreground"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-foreground">
+                        Base Price (LKR) *
+                      </label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={editingService.base_price}
+                        onChange={(e) =>
+                          setEditingService({
+                            ...editingService,
+                            base_price: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="bg-background border-input text-foreground"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground">Unit *</label>
+                      <select
+                        className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
+                        value={editingService.unit}
+                        onChange={(e) =>
+                          setEditingService({ ...editingService, unit: e.target.value })
+                        }
+                      >
+                        {units.map((unit) => (
+                          <option key={unit} value={unit}>
+                            {unit}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
+              )}
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleUpdate} disabled={uploading}>
+                  {uploading ? "Uploading..." : "Update Service"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Loading services...</p>
+            </div>
+          ) : serviceList.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <p className="text-muted-foreground mb-4">No services created yet</p>
+                <Button onClick={() => setIsCreateDialogOpen(true)}>
+                  Create First Service
+                </Button>
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {serviceList.map((service) => (
+                <Card key={service._id} className="overflow-hidden">
+                  <div className="aspect-video w-full bg-muted relative overflow-hidden">
+                    {service.icon ? (
+                      <img 
+                        src={service.icon} 
+                        alt={service.name} 
+                        className="w-full h-full object-cover transition-transform hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                        No Image
+                      </div>
+                    )}
+                    <div className="absolute top-2 right-2">
+                      <StatusBadge status={service.isActive ? "active" : "inactive"} />
+                    </div>
+                  </div>
+                  <CardHeader>
+                    <CardTitle className="capitalize text-foreground">{service.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      {service.category}
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
+                      {service.description}
+                    </p>
+                    <div className="border-t pt-3 mb-3">
+                      <p className="text-sm text-muted-foreground">Base Price</p>
+                      <p className="text-lg font-bold text-primary">
+                        LKR {service.base_price}/{service.unit}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => openEditDialog(service)}
+                      >
+                        <Pencil className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => openDeleteDialog(service._id)}
+                          >
+                            Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete the
+                              service.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDelete}>
+                              Continue
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
-      )}
-    </div>
-  );
-}
+      );
+    };
+    

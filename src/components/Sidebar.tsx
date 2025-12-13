@@ -66,6 +66,12 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
       icon: DollarSign,
       show: permissions.canManagePriceLists,
     },
+    {
+      label: "Reviews",
+      href: "/workbond/admin/reviews",
+      icon: Star,
+      show: permissions.isAdmin,
+    },
 
     // Customer Items
     {
