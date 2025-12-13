@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         router.push("/provider/pending");
       }
     } else {
-      router.push("/customer/dashboard");
+      router.push("/");
     }
   };
 

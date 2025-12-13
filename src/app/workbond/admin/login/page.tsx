@@ -133,7 +133,9 @@ export default function AdminLoginPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Shield className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-3xl font-bold text-foreground">Admin Portal</CardTitle>
+          <CardTitle className="text-3xl font-bold text-foreground">
+            Admin Portal
+          </CardTitle>
           <CardDescription className="text-base text-muted-foreground">
             Enter your administrator credentials to access the dashboard
           </CardDescription>
@@ -146,7 +148,9 @@ export default function AdminLoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-foreground">Email Address</FormLabel>
+                    <FormLabel className="text-foreground">
+                      Email Address
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
@@ -167,16 +171,13 @@ export default function AdminLoginPage() {
                   <FormItem>
                     <FormLabel className="text-foreground">Password</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          type="password"
-                          placeholder="Enter your password"
-                          disabled={isLoading}
-                          className="h-11 pl-10 bg-background border-input text-foreground"
-                          {...field}
-                        />
-                      </div>
+                      <Input
+                        type="password"
+                        placeholder="Enter your password"
+                        disabled={isLoading}
+                        className="h-11  bg-background border-input text-foreground"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

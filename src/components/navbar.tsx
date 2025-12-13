@@ -90,17 +90,7 @@ export function Navbar() {
                         Dashboard
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href={
-                          user.role === "admin"
-                            ? `/workbond/${user.role}/profile`
-                            : `/${user.role}/profile`
-                        }
-                      >
-                        Profile
-                      </Link>
-                    </DropdownMenuItem>
+                    
                   </>
                 )}
                 <DropdownMenuSeparator />

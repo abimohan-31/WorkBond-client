@@ -3,7 +3,9 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Sidebar } from "@/components/Sidebar";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
 
 export default function ProviderLayout({
   children,
@@ -12,6 +14,7 @@ export default function ProviderLayout({
 }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading) {
@@ -37,8 +40,20 @@ export default function ProviderLayout({
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar role="provider" />
-      <main className="flex-1 p-8">
+      <Sidebar
+        role="provider"
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
+      <main className="flex-1 p-4 md:p-8">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden mb-4"
+          onClick={() => setIsSidebarOpen(true)}
+        >
+          <Menu />
+        </Button>
         {children}
       </main>
     </div>

@@ -24,24 +24,43 @@ export default function CustomerTopbarLayout({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="mx-50 min-h-screen flex flex-col bg-background">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center justify-between">
+    <div className="mx-35 min-h-screen flex flex-col bg-background">
+      <header className="sticky top-0 z-50 w-full  bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center justify-between ">
           <div className="flex items-center gap-6">
-                        <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-              <Link href="/customer/dashboard" className="transition-colors hover:text-foreground/80 text-foreground/60">
+            <Link
+              href="/customer/dashboard"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              <Button variant="secondary" size="sm" className="mt-2">
                 Dashboard
-              </Link>
-              <Link href="/customer/job-posts" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              </Button>
+            </Link>
+            <Link
+              href="/customer/job-posts"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              <Button variant="secondary" size="sm" className="mt-2">
                 My Jobs
-              </Link>
-              <Link href="/customer/reviews" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              </Button>
+            </Link>
+            <Link
+              href="/customer/reviews"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              <Button variant="secondary" size="sm" className="mt-2">
                 Reviews
-              </Link>
-            </nav>
+              </Button>
+            </Link>
+            <Link
+              href="/customer/profile"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              <Button variant="secondary" size="sm" className="mt-2">
+                Profile
+              </Button>
+            </Link>
           </div>
-
-          
         </div>
       </header>
       <main className="flex-1 container py-6">{children}</main>

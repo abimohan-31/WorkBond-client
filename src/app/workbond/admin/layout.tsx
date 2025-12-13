@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, usePathname } from "next/navigation";
 import { Sidebar } from "@/components/Sidebar";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
 
 export default function AdminLayout({
   children,
@@ -13,6 +15,7 @@ export default function AdminLayout({
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Allow access to login page without authentication
   const isLoginPage = pathname === "/workbond/admin/login";
@@ -55,8 +58,20 @@ export default function AdminLayout({
   // Render admin layout with sidebar for authenticated admins
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar role="admin" />
-      <main className="flex-1 p-8">
+      <Sidebar
+        role="admin"
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
+      <main className="flex-1 p-4 md:p-8">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden mb-4"
+          onClick={() => setIsSidebarOpen(true)}
+        >
+          <Menu />
+        </Button>
         {children}
       </main>
     </div>

@@ -29,9 +29,10 @@ export default function CustomerDashboard() {
   const fetchStats = async () => {
     try {
       setLoading(true);
+      if (!user) return;
       const [jobPostsRes, reviewsRes, profileRes] = await Promise.all([
         jobPostService.getAll(),
-        reviewService.getAll(),
+        reviewService.getAll({ customerId: user._id }),
         customerService.getProfile().catch(() => null),
       ]);
 

@@ -7,7 +7,13 @@ import { serviceService } from "@/services/service.service";
 import { JobPostType } from "@/types/jobPost";
 import { ServiceType } from "@/types/service";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -39,6 +45,17 @@ export default function CustomerJobPostsPage() {
 
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [formCategory, setFormCategory] = useState("all");
+  const [confirmationDialog, setConfirmationDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     if (user && user.role === "customer") {
@@ -65,7 +82,12 @@ export default function CustomerJobPostsPage() {
   };
 
   const handleCreate = async () => {
-    if (!newJob.title || !newJob.description || !newJob.duration || !newJob.service_id) {
+    if (
+      !newJob.title ||
+      !newJob.description ||
+      !newJob.duration ||
+      !newJob.service_id
+    ) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -74,7 +96,13 @@ export default function CustomerJobPostsPage() {
       await jobPostService.create(newJob);
       toast.success("Job posted successfully");
       setIsCreateDialogOpen(false);
-      setNewJob({ title: "", description: "", duration: "", service_id: "", location: "" });
+      setNewJob({
+        title: "",
+        description: "",
+        duration: "",
+        service_id: "",
+        location: "",
+      });
       fetchData();
     } catch (error: any) {
       console.error("Error creating job:", error);
@@ -82,51 +110,74 @@ export default function CustomerJobPostsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this job post?")) return;
-
-    try {
-      await jobPostService.delete(id);
-      toast.success("Job post deleted");
-      fetchData();
-    } catch (error: any) {
-      console.error("Error deleting job:", error);
-      toast.error("Failed to delete job post");
-    }
+  const handleDelete = (id: string) => {
+    setConfirmationDialog({
+      isOpen: true,
+      title: "Are you sure you want to delete this job post?",
+      description: "This action cannot be undone.",
+      onConfirm: async () => {
+        try {
+          await jobPostService.delete(id);
+          toast.success("Job post deleted");
+          fetchData();
+        } catch (error: any) {
+          console.error("Error deleting job:", error);
+          toast.error("Failed to delete job post");
+        }
+      },
+    });
   };
 
-  const handleApproveApplication = async (jobId: string, appId: string) => {
-    try {
-      await jobPostService.approve(jobId, appId);
-      toast.success("Application approved");
-      fetchData();
-    } catch (error: any) {
-      console.error("Error approving application:", error);
-      toast.error("Failed to approve application");
-    }
+  const handleApproveApplication = (jobId: string, appId: string) => {
+    setConfirmationDialog({
+      isOpen: true,
+      title: "Approve Application?",
+      description: "Are you sure you want to approve this application?",
+      onConfirm: async () => {
+        try {
+          await jobPostService.approve(jobId, appId);
+          toast.success("Application approved");
+          fetchData();
+        } catch (error: any) {
+          console.error("Error approving application:", error);
+          toast.error("Failed to approve application");
+        }
+      },
+    });
   };
 
-  const handleRejectApplication = async (jobId: string, appId: string) => {
-    try {
-      await jobPostService.reject(jobId, appId);
-      toast.success("Application rejected");
-      fetchData();
-    } catch (error: any) {
-      console.error("Error rejecting application:", error);
-      toast.error("Failed to reject application");
-    }
+  const handleRejectApplication = (jobId: string, appId: string) => {
+    setConfirmationDialog({
+      isOpen: true,
+      title: "Reject Application?",
+      description: "Are you sure you want to reject this application?",
+      onConfirm: async () => {
+        try {
+          await jobPostService.reject(jobId, appId);
+          toast.success("Application rejected");
+          fetchData();
+        } catch (error: any) {
+          console.error("Error rejecting application:", error);
+          toast.error("Failed to reject application");
+        }
+      },
+    });
   };
 
   if (!user || user.role !== "customer") {
     return <div className="p-8">Access Denied</div>;
   }
 
-  const filteredJobs = filterService === "all" 
-    ? jobs 
-    : jobs.filter(job => {
-        const serviceId = typeof job.service_id === 'object' ? job.service_id._id : job.service_id;
-        return serviceId === filterService;
-      });
+  const filteredJobs =
+    filterService === "all"
+      ? jobs
+      : jobs.filter((job) => {
+          const serviceId =
+            typeof job.service_id === "object"
+              ? job.service_id._id
+              : job.service_id;
+          return serviceId === filterService;
+        });
 
   return (
     <div className="space-y-6">
@@ -149,7 +200,9 @@ export default function CustomerJobPostsPage() {
                 <Input
                   placeholder="e.g., House Cleaning Needed"
                   value={newJob.title}
-                  onChange={(e) => setNewJob({ ...newJob, title: e.target.value })}
+                  onChange={(e) =>
+                    setNewJob({ ...newJob, title: e.target.value })
+                  }
                 />
               </div>
               <div>
@@ -163,9 +216,13 @@ export default function CustomerJobPostsPage() {
                   }}
                 >
                   <option value="all">All Categories</option>
-                  {Array.from(new Set(services.map(s => s.category))).map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
+                  {Array.from(new Set(services.map((s) => s.category))).map(
+                    (cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
               <div>
@@ -173,23 +230,27 @@ export default function CustomerJobPostsPage() {
                 <select
                   className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
                   value={newJob.service_id}
-                  onChange={(e) => setNewJob({ ...newJob, service_id: e.target.value })}
+                  onChange={(e) =>
+                    setNewJob({ ...newJob, service_id: e.target.value })
+                  }
                 >
                   <option value="">Select a service</option>
-                  
-                  {Array.from(new Set(services.map(s => s.category)))
-                    .filter(cat => formCategory === "all" || cat === formCategory)
-                    .map(category => (
-                    <optgroup key={category} label={category}>
-                      {services
-                        .filter(s => s.category === category)
-                        .map(service => (
-                          <option key={service._id} value={service._id}>
-                            {service.name}
-                          </option>
-                        ))}
-                    </optgroup>
-                  ))}
+
+                  {Array.from(new Set(services.map((s) => s.category)))
+                    .filter(
+                      (cat) => formCategory === "all" || cat === formCategory
+                    )
+                    .map((category) => (
+                      <optgroup key={category} label={category}>
+                        {services
+                          .filter((s) => s.category === category)
+                          .map((service) => (
+                            <option key={service._id} value={service._id}>
+                              {service.name}
+                            </option>
+                          ))}
+                      </optgroup>
+                    ))}
                 </select>
               </div>
               <div>
@@ -197,7 +258,9 @@ export default function CustomerJobPostsPage() {
                 <Textarea
                   placeholder="Describe the work you need done..."
                   value={newJob.description}
-                  onChange={(e) => setNewJob({ ...newJob, description: e.target.value })}
+                  onChange={(e) =>
+                    setNewJob({ ...newJob, description: e.target.value })
+                  }
                   rows={4}
                 />
               </div>
@@ -207,7 +270,9 @@ export default function CustomerJobPostsPage() {
                   <Input
                     placeholder="e.g., 2 weeks, 1 month"
                     value={newJob.duration}
-                    onChange={(e) => setNewJob({ ...newJob, duration: e.target.value })}
+                    onChange={(e) =>
+                      setNewJob({ ...newJob, duration: e.target.value })
+                    }
                   />
                 </div>
                 <div>
@@ -215,13 +280,18 @@ export default function CustomerJobPostsPage() {
                   <Input
                     placeholder="e.g., New York, NY"
                     value={newJob.location}
-                    onChange={(e) => setNewJob({ ...newJob, location: e.target.value })}
+                    onChange={(e) =>
+                      setNewJob({ ...newJob, location: e.target.value })
+                    }
                   />
                 </div>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsCreateDialogOpen(false)}
+              >
                 Cancel
               </Button>
               <Button onClick={handleCreate}>Post Job</Button>
@@ -231,7 +301,9 @@ export default function CustomerJobPostsPage() {
       </div>
 
       <div className="flex items-center gap-4">
-        <label className="text-sm font-medium text-muted-foreground">Filter by Service:</label>
+        <label className="text-sm font-medium text-muted-foreground">
+          Filter by Service:
+        </label>
         <select
           value={filterService}
           onChange={(e) => setFilterService(e.target.value)}
@@ -239,8 +311,11 @@ export default function CustomerJobPostsPage() {
         >
           <option value="all">All Services ({jobs.length})</option>
           {services.map((service) => {
-            const count = jobs.filter(job => {
-              const serviceId = typeof job.service_id === 'object' ? job.service_id._id : job.service_id;
+            const count = jobs.filter((job) => {
+              const serviceId =
+                typeof job.service_id === "object"
+                  ? job.service_id._id
+                  : job.service_id;
               return serviceId === service._id;
             }).length;
             return (
@@ -251,7 +326,11 @@ export default function CustomerJobPostsPage() {
           })}
         </select>
         {filterService !== "all" && (
-          <Button variant="outline" size="sm" onClick={() => setFilterService("all")}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFilterService("all")}
+          >
             Clear Filter
           </Button>
         )}
@@ -264,14 +343,20 @@ export default function CustomerJobPostsPage() {
       ) : jobs.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
-            <p className="text-muted-foreground mb-4">You haven't posted any jobs yet</p>
-            <Button onClick={() => setIsCreateDialogOpen(true)}>Post Your First Job</Button>
+            <p className="text-muted-foreground mb-4">
+              You haven't posted any jobs yet
+            </p>
+            <Button onClick={() => setIsCreateDialogOpen(true)}>
+              Post Your First Job
+            </Button>
           </CardContent>
         </Card>
       ) : filteredJobs.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
-            <p className="text-muted-foreground mb-4">No job posts found for this service</p>
+            <p className="text-muted-foreground mb-4">
+              No job posts found for this service
+            </p>
             <Button variant="outline" onClick={() => setFilterService("all")}>
               Show All Jobs
             </Button>
@@ -286,7 +371,10 @@ export default function CustomerJobPostsPage() {
                   <div>
                     <CardTitle>{job.title}</CardTitle>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {typeof job.service_id === 'object' ? job.service_id.name : 'Service'} • {job.duration}
+                      {typeof job.service_id === "object"
+                        ? job.service_id.name
+                        : "Service"}{" "}
+                      • {job.duration}
                       {job.location && ` • ${job.location}`}
                     </p>
                   </div>
@@ -294,7 +382,7 @@ export default function CustomerJobPostsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">{job.description}</p>
-                
+
                 {job.applications && job.applications.length > 0 && (
                   <div className="border-t pt-4">
                     <h4 className="font-semibold mb-3">
@@ -308,10 +396,14 @@ export default function CustomerJobPostsPage() {
                         >
                           <div>
                             <p className="font-medium">
-                              {typeof app.providerId === 'object' && app.providerId !== null ? (app.providerId as any).name : 'Provider'}
+                              {typeof app.providerId === "object" &&
+                              app.providerId !== null
+                                ? (app.providerId as any).name
+                                : "Provider"}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              Status: <span className="capitalize">{app.status}</span>
+                              Status:{" "}
+                              <span className="capitalize">{app.status}</span>
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
@@ -329,14 +421,20 @@ export default function CustomerJobPostsPage() {
                               <>
                                 <Button
                                   size="sm"
-                                  onClick={() => app._id && handleApproveApplication(job._id, app._id)}
+                                  onClick={() =>
+                                    app._id &&
+                                    handleApproveApplication(job._id, app._id)
+                                  }
                                 >
                                   Approve
                                 </Button>
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => app._id && handleRejectApplication(job._id, app._id)}
+                                  onClick={() =>
+                                    app._id &&
+                                    handleRejectApplication(job._id, app._id)
+                                  }
                                 >
                                   Reject
                                 </Button>
@@ -350,7 +448,11 @@ export default function CustomerJobPostsPage() {
                 )}
               </CardContent>
               <CardFooter className="flex justify-end">
-                <Button variant="destructive" size="sm" onClick={() => handleDelete(job._id)}>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDelete(job._id)}
+                >
                   Delete
                 </Button>
               </CardFooter>
@@ -367,29 +469,88 @@ export default function CustomerJobPostsPage() {
           {selectedApplication && selectedApplication.providerId && (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Name</label>
-                <p className="text-foreground">{(selectedApplication.providerId as any).name}</p>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Name
+                </label>
+                <p className="text-foreground">
+                  {(selectedApplication.providerId as any).name}
+                </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Email</label>
-                <p className="text-foreground">{(selectedApplication.providerId as any).email}</p>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Email
+                </label>
+                <p className="text-foreground">
+                  {(selectedApplication.providerId as any).email}
+                </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Phone</label>
-                <p className="text-foreground">{(selectedApplication.providerId as any).phone}</p>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Phone
+                </label>
+                <p className="text-foreground">
+                  {(selectedApplication.providerId as any).phone}
+                </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Address</label>
-                <p className="text-foreground">{(selectedApplication.providerId as any).address}</p>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Address
+                </label>
+                <p className="text-foreground">
+                  {(selectedApplication.providerId as any).address}
+                </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Availability</label>
-                <p className="text-foreground">{(selectedApplication.providerId as any).availability_status}</p>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Availability
+                </label>
+                <p className="text-foreground">
+                  {(selectedApplication.providerId as any).availability_status}
+                </p>
               </div>
             </div>
           )}
           <DialogFooter>
             <Button onClick={() => setIsDetailsDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={confirmationDialog.isOpen}
+        onOpenChange={(isOpen) =>
+          setConfirmationDialog({ ...confirmationDialog, isOpen })
+        }
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{confirmationDialog.title}</DialogTitle>
+            <DialogDescription>
+              {confirmationDialog.description}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() =>
+                setConfirmationDialog({ ...confirmationDialog, isOpen: false })
+              }
+            >
+              Cancel
+            </Button>
+            <Button
+              variant={
+                confirmationDialog.title.toLowerCase().includes("delete")
+                  ? "destructive"
+                  : "default"
+              }
+              onClick={() => {
+                confirmationDialog.onConfirm();
+                setConfirmationDialog({ ...confirmationDialog, isOpen: false });
+              }}
+            >
+              Confirm
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

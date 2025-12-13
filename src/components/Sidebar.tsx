@@ -8,27 +8,26 @@ import { usePermissions } from "@/hooks/usePermissions";
 import {
   LayoutDashboard,
   User,
-  Settings,
   Briefcase,
-  Calendar,
   Users,
   CheckSquare,
-  FileText,
   CreditCard,
   DollarSign,
   Star,
   PlusCircle,
+  X,
 } from "lucide-react";
 
 interface SidebarProps {
   role: "admin" | "provider" | "customer";
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export function Sidebar({ role }: SidebarProps) {
+export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const permissions = usePermissions();
 
-  // Define all possible menu items with their required permission
   const menuItems = [
     // Admin Items
     {
@@ -78,14 +77,14 @@ export function Sidebar({ role }: SidebarProps) {
     {
       label: "My Job Posts",
       href: "/customer/job-posts",
-      icon: Calendar,
+      icon: Briefcase,
       show: permissions.canViewOwnJobPosts,
     },
     {
       label: "Reviews",
       href: "/customer/reviews",
       icon: Star,
-      show: permissions.isCustomer, // Customers can create reviews
+      show: permissions.isCustomer,
     },
 
     // Provider Items
@@ -111,17 +110,17 @@ export function Sidebar({ role }: SidebarProps) {
       label: "My Reviews",
       href: "/provider/reviews",
       icon: Star,
-      show: permissions.isProvider, // Providers view their reviews
+      show: permissions.isProvider,
     },
     {
       label: "Subscriptions",
       href: "/provider/subscriptions",
       icon: CreditCard,
-      show: permissions.isProvider, // Providers view subscriptions
+      show: permissions.isProvider,
     },
     {
       label: "Price List",
-      href: "/pricelists", // Public page but relevant for provider
+      href: "/pricelists",
       icon: DollarSign,
       show: permissions.isProvider,
     },
@@ -131,46 +130,59 @@ export function Sidebar({ role }: SidebarProps) {
       label: "Profile",
       href: role === "admin" ? `/workbond/${role}/profile` : `/${role}/profile`,
       icon: User,
-      show: role !== "admin", // Everyone has a profile except admin
-    },
-    {
-      label: "Settings",
-      href: "/workbond/admin/settings", // Only admin has settings page for now
-      icon: Settings,
-      show: permissions.isAdmin,
+      show: role !== "admin",
     },
   ];
 
-  // Filter items based on permissions
   const visibleItems = menuItems.filter((item) => item.show);
 
   return (
-    <div className="pb-12 min-h-screen w-64 border-r bg-background hidden md:block">
-      <div className="space-y-4 py-4">
-        <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-            {role.charAt(0).toUpperCase() + role.slice(1)} Portal
-          </h2>
-          <div className="space-y-1">
-            {visibleItems.map((link) => (
+    <>
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-black/50 transition-opacity md:hidden mx-4",
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        onClick={onClose}
+      />
+      <div
+        className={cn(
+          "fixed top-0 left-0 z-50 h-full w-64 border-r bg-background transition-transform transform md:relative md:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="space-y-4 py-4">
+          <div className="px-3 py-2">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Menu</h2>
               <Button
-                key={link.href}
-                variant={pathname === link.href ? "secondary" : "ghost"}
-                className={cn(
-                  "w-full justify-start",
-                  pathname === link.href && "bg-secondary"
-                )}
-                asChild
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={onClose}
               >
-                <Link href={link.href}>
-                  <link.icon className="mr-2 h-4 w-4" />
-                  {link.label}
-                </Link>
+                <X className="h-4 w-4" />
               </Button>
-            ))}
+            </div>
+            <div className="space-y-1">
+              {visibleItems.map((link) => (
+                <Button
+                  key={link.href}
+                  variant={pathname === link.href ? "secondary" : "ghost"}
+                  className="w-full justify-start"
+                  asChild
+                  onClick={onClose}
+                >
+                  <Link href={link.href}>
+                    <link.icon className="mr-2 h-4 w-4" />
+                    {link.label}
+                  </Link>
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

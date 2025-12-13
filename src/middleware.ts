@@ -39,24 +39,24 @@ export function middleware(request: NextRequest) {
       // Admin routes
       if (pathname.startsWith("/admin")) {
         if (user.role !== "admin") {
-          const homeUrl = new URL("/", request.url);
-          return NextResponse.redirect(homeUrl);
+          const loginUrl = new URL("/auth/login", request.url);
+          return NextResponse.redirect(loginUrl);
         }
       }
 
       // Provider routes
       if (pathname.startsWith("/provider")) {
         if (user.role !== "provider") {
-          const homeUrl = new URL("/", request.url);
-          return NextResponse.redirect(homeUrl);
+          const loginUrl = new URL("/auth/login", request.url);
+          return NextResponse.redirect(loginUrl);
         }
       }
 
       // Customer routes
       if (pathname.startsWith("/customer")) {
         if (user.role !== "customer") {
-          const homeUrl = new URL("/", request.url);
-          return NextResponse.redirect(homeUrl);
+          const loginUrl = new URL("/auth/login", request.url);
+          return NextResponse.redirect(loginUrl);
         }
       }
     } catch (error) {
