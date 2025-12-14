@@ -10,6 +10,8 @@ export function middleware(request: NextRequest) {
   // Define public routes
   const publicRoutes = [
     "/",
+    "/about",
+    "/contact",
     "/auth/login",
     "/auth/register",
     "/services",

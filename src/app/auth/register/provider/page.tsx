@@ -128,7 +128,7 @@ export default function RegisterProviderPage() {
       <div className="w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-xl flex flex-col lg:flex-row">
         <div className="relative w-full lg:w-1/2 h-64 sm:h-80 lg:h-auto">
           <Image
-            src="https://images.pexels.com/photos/7563656/pexels-photo-7563656.jpeg?auto=compress&cs=tinysrgb&w=1600"
+            src="https://images.pexels.com/photos/5439460/pexels-photo-5439460.jpeg?auto=compress&cs=tinysrgb&w=1600"
             alt="Provider registration"
             fill
             priority
