@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +9,17 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Mail, Phone, MapPin, Briefcase, Star, CheckCircle } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Briefcase,
+  Star,
+  CheckCircle,
+} from "lucide-react";
+import { reviewService } from "@/services/review.service";
+import { useAuth } from "@/contexts/AuthContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Provider {
   _id: string;
@@ -23,6 +34,14 @@ interface Provider {
   rating?: number;
 }
 
+interface Review {
+  _id: string;
+  customer_id: any;
+  rating: number;
+  comment: string;
+  review_date: string;
+}
+
 interface ProviderDetailsModalProps {
   provider: Provider | null;
   open: boolean;
@@ -34,6 +53,35 @@ export function ProviderDetailsModal({
   open,
   onClose,
 }: ProviderDetailsModalProps) {
+  const { user } = useAuth();
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+
+  useEffect(() => {
+    if (open && provider && user) {
+      fetchReviews();
+    } else {
+      setReviews([]);
+    }
+  }, [open, provider, user]);
+
+  const fetchReviews = async () => {
+    if (!provider) return;
+    try {
+      setLoadingReviews(true);
+      const response = await reviewService.getAll({
+        provider_id: provider._id,
+      });
+      if (response.success && response.data) {
+        setReviews(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
+
   if (!provider) return null;
 
   return (
@@ -66,7 +114,9 @@ export function ProviderDetailsModal({
                 {provider.rating && (
                   <div className="flex items-center gap-1 text-sm">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-semibold">{provider.rating.toFixed(1)}</span>
+                    <span className="font-semibold">
+                      {provider.rating.toFixed(1)}
+                    </span>
                   </div>
                 )}
               </div>
@@ -120,6 +170,50 @@ export function ProviderDetailsModal({
               </div>
             </div>
           </div>
+
+          {user && (
+            <div className="border-t pt-6">
+              <h4 className="text-lg font-semibold mb-4">Reviews</h4>
+              {loadingReviews ? (
+                <p className="text-sm text-muted-foreground">
+                  Loading reviews...
+                </p>
+              ) : reviews.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No reviews yet</p>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {reviews.map((review) => (
+                    <Card key={review._id}>
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <span>{review.rating}/5</span>
+                            <span className="text-warning">
+                              {"★".repeat(review.rating)}
+                              {"☆".repeat(5 - review.rating)}
+                            </span>
+                          </CardTitle>
+                          <p className="text-xs text-muted-foreground">
+                            {typeof review.customer_id === "object"
+                              ? review.customer_id.name
+                              : "Customer"}
+                          </p>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-sm">{review.comment}</p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {review.review_date
+                            ? new Date(review.review_date).toLocaleDateString()
+                            : "N/A"}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

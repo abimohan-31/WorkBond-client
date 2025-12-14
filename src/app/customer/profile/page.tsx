@@ -28,11 +28,22 @@ export default function CustomerProfilePage() {
   const handleUpdate = async () => {
     try {
       await customerService.updateProfile(profile);
-      await refreshUser(); // Refresh auth context to update avatar in topbar
+      await refreshUser();
       toast.success("Profile updated");
       setIsEditing(false);
     } catch (err) {
       toast.error("Failed to update profile");
+    }
+  };
+
+  const handleImageUpdate = async (url: string) => {
+    try {
+      await customerService.updateProfile({ ...profile, profileImage: url });
+      setProfile((prev: any) => ({ ...prev, profileImage: url }));
+      await refreshUser();
+      toast.success("Profile image updated");
+    } catch (err) {
+      toast.error("Failed to update profile image");
     }
   };
 
@@ -46,7 +57,7 @@ export default function CustomerProfilePage() {
         <div className="flex justify-center mb-6">
           <CloudinaryImageUpload
             currentImageUrl={profile.profileImage}
-            onUploadSuccess={(url) => setProfile({ ...profile, profileImage: url })}
+            onUploadSuccess={handleImageUpdate}
             disabled={!isEditing}
           />
         </div>

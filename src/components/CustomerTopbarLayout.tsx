@@ -25,7 +25,7 @@ export default function CustomerTopbarLayout({
 
   return (
     <div className="mx-35 min-h-screen flex flex-col bg-background">
-      <header className="sticky top-0 z-50 w-full  bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="w-full border-b bg-background">
         <div className="container flex h-14 items-center justify-between ">
           <div className="flex items-center gap-6">
             <Link
@@ -63,7 +63,7 @@ export default function CustomerTopbarLayout({
           </div>
         </div>
       </header>
-      <main className="flex-1 container py-6">{children}</main>
+      <main className="flex-1 container py-6 overflow-y-auto">{children}</main>
     </div>
   );
 }

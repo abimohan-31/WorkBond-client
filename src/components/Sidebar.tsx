@@ -146,21 +146,20 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
     <>
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-black/50 transition-opacity md:hidden mx-4",
+          "inset-0 z-40 bg-black/50 transition-opacity md:hidden mx-4",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
       />
       <div
         className={cn(
-          "fixed top-0 left-0 z-50 h-full w-64 border-r bg-background transition-transform transform md:relative md:translate-x-0",
+          "top-0 left-0 z-50 h-full w-64 border-r bg-background transition-transform transform md:relative md:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="space-y-4 py-4">
           <div className="px-3 py-2">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Menu</h2>
               <Button
                 variant="ghost"
                 size="icon"

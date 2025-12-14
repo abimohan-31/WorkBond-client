@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const loginSchema = z.object({
   email: z
@@ -89,7 +90,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-secondary/40 via-background to-primary/40 px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md border-border bg-card text-card-foreground">
+      <Card className="w-full max-w-md border-background bg-card text-card-foreground">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center text-foreground">Login</CardTitle>
           <CardDescription className="text-center text-muted-foreground">
@@ -154,6 +155,13 @@ export default function LoginPage() {
               </Button>
             </form>
           </Form>
+
+          <div className="text-center text-sm lg:text-center">
+                      Don't have an account?{" "}
+                      <Link href="/auth/register/customer" className="underline hover:text-primary">
+                        Sign up
+                      </Link>
+                    </div>
         </CardContent>
       </Card>
     </div>

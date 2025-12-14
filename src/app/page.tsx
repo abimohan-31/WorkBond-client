@@ -15,6 +15,8 @@ import { HeroSection } from "@/components/ui/HeroSection";
 import { WorkPostType } from "@/types/provider";
 import { ProviderDetailsModal } from "@/components/modals/ProviderDetailsModal";
 import { PriceList, Service } from "@/types/workPost";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface ProviderInfo {
   _id: string;
@@ -31,6 +33,7 @@ interface ProviderInfo {
 
 export default function Home() {
   const { user, isLoading: authLoading } = useAuth();
+  const router = useRouter();
   const [services, setServices] = useState<Service[]>([]);
   const [priceLists, setPriceLists] = useState<PriceList[]>([]);
   const [workPosts, setWorkPosts] = useState<WorkPostType[]>([]);
@@ -42,13 +45,23 @@ export default function Home() {
   );
   const [modalOpen, setModalOpen] = useState(false);
 
-  const isCustomerLoggedIn = user && user.role === "customer";
+  const isPublic = !user;
+  const isCustomer = user && user.role === "customer";
+  const isProvider = user && user.role === "provider";
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
 
-      if (isCustomerLoggedIn) {
+      const [servicesRes, priceListsRes] = await Promise.all([
+        serviceService.getAll(),
+        priceListService.getAll(),
+      ]);
+
+      setServices(servicesRes.data || []);
+      setPriceLists(priceListsRes.data || []);
+
+      if (isCustomer || isProvider) {
         const workPostsRes = await workPostService.getAll();
         if (workPostsRes.success && workPostsRes.data) {
           const posts = Array.isArray(workPostsRes.data)
@@ -56,26 +69,14 @@ export default function Home() {
             : [];
           setWorkPosts(posts);
         }
-      } else {
-        const [servicesRes, priceListsRes] = await Promise.all([
-          serviceService.getAll(),
-          priceListService.getAll(),
-        ]);
-
-        setServices(servicesRes.data || []);
-        setPriceLists(priceListsRes.data || []);
       }
     } catch (error: any) {
       console.error("Error fetching data:", error);
-      if (isCustomerLoggedIn) {
-        toast.error("Failed to load work posts");
-      } else {
-        toast.error("Failed to load services");
-      }
+      toast.error("Failed to load data");
     } finally {
       setLoading(false);
     }
-  }, [isCustomerLoggedIn]);
+  }, [isCustomer, isProvider]);
 
   useEffect(() => {
     if (!authLoading) {
@@ -204,7 +205,7 @@ export default function Home() {
   const handleImageError = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement>) => {
       const target = e.currentTarget;
-      target.src = "/placeholder-image.svg";
+      target.src = "";
       target.alt = "Image not available";
     },
     []
@@ -230,17 +231,13 @@ export default function Home() {
       >
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-foreground mb-6">
-            {isCustomerLoggedIn ? "Provider Work Showcases" : "Our Services"}
+            Our Services
           </h2>
 
           <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
             <Input
               type="text"
-              placeholder={
-                isCustomerLoggedIn
-                  ? "Search work posts..."
-                  : "Search services..."
-              }
+              placeholder="Search services..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full md:w-1/2"
@@ -270,14 +267,121 @@ export default function Home() {
 
           {loading || authLoading ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">
-                {isCustomerLoggedIn
-                  ? "Loading work posts..."
-                  : "Loading services..."}
-              </p>
+              <p className="text-muted-foreground">Loading services...</p>
             </div>
-          ) : isCustomerLoggedIn ? (
-            filteredWorkPosts.length === 0 ? (
+          ) : filteredServices.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No services found</p>
+            </div>
+          ) : (
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredServices.map((service) => (
+                <Card
+                  key={service._id}
+                  className="hover:shadow-lg transition-shadow flex flex-col h-full overflow-hidden"
+                >
+                  <div className="h-48 w-full bg-muted relative overflow-hidden">
+                    {service.icon ? (
+                      <img
+                        src={service.icon}
+                        alt={service.name}
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        onError={handleImageError}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                        No Image
+                      </div>
+                    )}
+                  </div>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between gap-2">
+                      <span className="capitalize truncate">
+                        {service.name}
+                      </span>
+                      <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded whitespace-nowrap shrink-0">
+                        {service.category}
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <p className="text-muted-foreground mb-4 line-clamp-3">
+                      {service.description}
+                    </p>
+                    <div className="border-t pt-4 mt-auto space-y-3">
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          Pricing
+                        </p>
+                        <p className="text-lg font-bold text-secondary truncate">
+                          {getPriceDisplay(service)}
+                        </p>
+                      </div>
+                      <Button
+                        className="w-full"
+                        onClick={() => {
+                          if (isPublic) {
+                            router.push("/auth/login");
+                          } else if (isCustomer) {
+                            router.push(`/services/${service._id}/providers`);
+                          } else if (isProvider) {
+                            toast.info("Providers cannot view provider listings");
+                          }
+                        }}
+                      >
+                        See more
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {(isCustomer || isProvider) && (
+          <div className="mb-8 mt-12">
+            <h2 className="text-3xl font-bold text-foreground mb-6">
+              Provider Work Showcases
+            </h2>
+
+            <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
+              <Input
+                type="text"
+                placeholder="Search work posts..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full md:w-1/2"
+                aria-label="Search work posts"
+              />
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full md:w-1/4 px-4 py-2 border rounded-md bg-background text-foreground border-input"
+                aria-label="Category filter"
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat === "all" ? "All Categories" : cat}
+                  </option>
+                ))}
+              </select>
+              <Button
+                variant="secondary"
+                className="w-full md:w-auto"
+                onClick={handleClearFilters}
+                aria-label="Clear search and filters"
+              >
+                Clear
+              </Button>
+            </div>
+
+            {loading || authLoading ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Loading work posts...</p>
+              </div>
+            ) : filteredWorkPosts.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">No work posts found</p>
               </div>
@@ -336,7 +440,21 @@ export default function Home() {
                             {cleanedDescription}
                           </p>
                         )}
-                        {provider && (
+                        {provider && isCustomer && (
+                          <div className="border-t pt-3 sm:pt-4 mt-auto">
+                            <p className="text-xs sm:text-sm text-muted-foreground mb-1">
+                              Provider
+                            </p>
+                            <Button
+                              variant="link"
+                              className="p-0 h-auto text-sm sm:text-base font-medium"
+                              onClick={() => handleViewProviderDetails(provider)}
+                            >
+                              {provider.name}
+                            </Button>
+                          </div>
+                        )}
+                        {provider && isProvider && (
                           <div className="border-t pt-3 sm:pt-4 mt-auto">
                             <p className="text-xs sm:text-sm text-muted-foreground mb-1">
                               Provider
@@ -351,61 +469,9 @@ export default function Home() {
                   );
                 })}
               </div>
-            )
-          ) : filteredServices.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No services found</p>
-            </div>
-          ) : (
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredServices.map((service) => (
-                <Card
-                  key={service._id}
-                  className="hover:shadow-lg transition-shadow flex flex-col h-full overflow-hidden"
-                >
-                  <div className="h-48 w-full bg-muted relative overflow-hidden">
-                    {service.icon ? (
-                      <img
-                        src={service.icon}
-                        alt={service.name}
-                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                        onError={handleImageError}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                        No Image
-                      </div>
-                    )}
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between gap-2">
-                      <span className="capitalize truncate">
-                        {service.name}
-                      </span>
-                      <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded whitespace-nowrap shrink-0">
-                        {service.category}
-                      </span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-1 flex flex-col justify-between">
-                    <p className="text-muted-foreground mb-4 line-clamp-3">
-                      {service.description}
-                    </p>
-                    <div className="border-t pt-4 mt-auto">
-                      <p className="text-sm text-muted-foreground mb-1">
-                        Pricing
-                      </p>
-                      <p className="text-lg font-bold text-secondary truncate">
-                        {getPriceDisplay(service)}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
 
       <ProviderDetailsModal

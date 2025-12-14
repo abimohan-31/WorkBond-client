@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import CloudinaryImageUpload from "@/components/CloudinaryImageUpload";
 
 export default function ProviderProfilePage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -29,6 +29,7 @@ export default function ProviderProfilePage() {
   const handleUpdate = async () => {
     try {
       await providerService.updateProfile(profile);
+      await refreshUser();
       toast.success("Profile updated");
       setIsEditing(false);
     } catch (err) {
@@ -40,6 +41,7 @@ export default function ProviderProfilePage() {
     try {
       await providerService.updateProfileImage(url);
       setProfile((prev: any) => ({ ...prev, profileImage: url }));
+      await refreshUser();
       toast.success("Profile image updated");
     } catch (err) {
       toast.error("Failed to update profile image");

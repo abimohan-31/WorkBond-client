@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Sidebar } from "@/components/Sidebar";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 
@@ -15,6 +15,9 @@ export default function ProviderLayout({
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const mainRef = useRef<HTMLDivElement>(null);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     if (!isLoading) {
@@ -25,6 +28,26 @@ export default function ProviderLayout({
       }
     }
   }, [user, isLoading, router]);
+
+  useEffect(() => {
+    const mainElement = mainRef.current;
+    if (!mainElement) return;
+
+    const handleScroll = () => {
+      const currentScrollY = mainElement.scrollTop;
+      
+      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        setIsSidebarVisible(false);
+      } else if (currentScrollY < lastScrollY.current) {
+        setIsSidebarVisible(true);
+      }
+      
+      lastScrollY.current = currentScrollY;
+    };
+
+    mainElement.addEventListener("scroll", handleScroll);
+    return () => mainElement.removeEventListener("scroll", handleScroll);
+  }, []);
 
   if (isLoading) {
     return (
@@ -39,22 +62,33 @@ export default function ProviderLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar
-        role="provider"
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
-      <main className="flex-1 p-4 md:p-8">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden mb-4"
-          onClick={() => setIsSidebarOpen(true)}
-        >
-          <Menu />
-        </Button>
-        {children}
+    <div className="flex h-screen bg-background">
+      <div
+        className={`fixed md:relative transition-transform duration-300 z-40 ${
+          isSidebarVisible ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0`}
+      >
+        <Sidebar
+          role="provider"
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+      </div>
+      <main
+        ref={mainRef}
+        className="flex-1 flex flex-col overflow-hidden"
+      >
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden mb-4"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <Menu />
+          </Button>
+          {children}
+        </div>
       </main>
     </div>
   );

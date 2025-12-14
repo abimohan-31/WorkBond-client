@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Phone, Mail, MapPin } from "lucide-react";
+import Image from "next/image";
 
 export function Footer() {
   const pathname = usePathname();
@@ -35,9 +36,14 @@ export function Footer() {
   return (
     <footer className="border-t bg-secondary py-8">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 m-5">
+        <div className="grid grid-cols-1 grid-cols-4 gap-20 m-5">
           <div className="space-y-4">
-            <h3 className="font-bold text-lg  text-background">WorkBond</h3>
+            <Image
+              src="/noBgWhite.svg"
+              width={200}
+              height={100}
+              alt="WorkBond Logo"
+            />{" "}
             <p className="text-sm text-muted-foreground">
               Connecting you with trusted local professionals for all your
               service needs.
@@ -105,25 +111,27 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4 text-background">Contact Us</h3>
+            <Link
+              href="/contact"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <h3 className="font-semibold mb-4 text-background">Contact Us</h3>
+            </Link>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-3 text-muted-foreground">
                 <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
                 <span>Ukkulankulam, Vavuniya</span>
               </li>
-              <li className="flex items-center gap-3 text-muted-foreground">
-                <Phone className="h-4 w-4 shrink-0" />
-                <span>0704808145</span>
-              </li>
+
               <li className="flex items-center gap-3 text-muted-foreground">
                 <Mail className="h-4 w-4 shrink-0" />
-                <span>abishamohanathas0431@gmail.com</span>
+                <span>abimohanuki@gmail.com</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t pt-5 text-center text-sm text-muted-foreground">
+        <div className="border-t pt-5 text-center text-sm text-muted">
           <p>
             &copy; {new Date().getFullYear()} WorkBond. All rights reserved.
           </p>

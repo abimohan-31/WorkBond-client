@@ -126,6 +126,16 @@ export default function RegisterProviderPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-secondary/40 via-background to-primary/40 px-4 py-10 sm:px-6 lg:px-8">
       <div className="w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-xl flex flex-col lg:flex-row">
+        <div className="relative w-full lg:w-1/2 h-64 sm:h-80 lg:h-auto">
+          <Image
+            src="https://images.pexels.com/photos/7563656/pexels-photo-7563656.jpeg?auto=compress&cs=tinysrgb&w=1600"
+            alt="Provider registration"
+            fill
+            priority
+            className="object-cover"
+          />
+        </div>
+
         <div className="w-full lg:w-1/2 p-8 sm:p-10 lg:p-12 space-y-8">
           <div className="text-center lg:text-left space-y-2">
             <h1 className="text-3xl font-bold text-[#0B204C]">
@@ -343,16 +353,6 @@ export default function RegisterProviderPage() {
               Log in
             </Link>
           </div>
-        </div>
-
-        <div className="relative w-full lg:w-1/2 h-64 sm:h-80 lg:h-auto">
-          <Image
-            src="https://images.pexels.com/photos/13443796/pexels-photo-13443796.jpeg?auto=compress&cs=tinysrgb&w=1600"
-            alt="Provider registration"
-            fill
-            priority
-            className="object-cover"
-          />
         </div>
       </div>
     </div>

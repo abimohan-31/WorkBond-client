@@ -125,6 +125,17 @@ export default function RegisterCustomerPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-secondary/40 via-background to-primary/40 px-4 py-10 sm:px-6 lg:px-8">
       <div className="w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-xl flex flex-col lg:flex-row">
+        <div className="relative w-full lg:w-1/2 h-64 sm:h-80 lg:h-auto">
+          <Image
+            src="https://images.pexels.com/photos/5439460/pexels-photo-5439460.jpeg?auto=compress&cs=tinysrgb&w=1600"
+            alt="Customer registration"
+            fill
+            priority
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/40" />
+        </div>
+
         <div className="w-full lg:w-1/2 p-8 sm:p-10 lg:p-12 space-y-8">
           <div className="text-center lg:text-left space-y-2">
             <h1 className="text-3xl font-bold text-[#0B204C]">
@@ -254,18 +265,6 @@ export default function RegisterCustomerPage() {
               Log in
             </Link>
           </div>
-        </div>
-
-        <div className="relative w-full lg:w-1/2 h-64 sm:h-80 lg:h-auto">
-          <Image
-            src="https://images.pexels.com/photos/5439460/pexels-photo-5439460.jpeg?auto=compress&cs=tinysrgb&w=1600"
-            alt="Customer registration"
-            fill
-            priority
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/40" />
-          
         </div>
       </div>
     </div>
