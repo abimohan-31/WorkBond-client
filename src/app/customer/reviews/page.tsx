@@ -47,6 +47,8 @@ export default function CustomerReviewsPage() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
   const [newReview, setNewReview] = useState({
     provider_id: "",
     rating: 5,
@@ -62,37 +64,38 @@ export default function CustomerReviewsPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch all reviews and filter for customer's own reviews
       const reviewsRes = await reviewService.getAll();
       const allReviews = reviewsRes.data || [];
-      
+
       // Filter to show only this customer's reviews
       const customerReviews = allReviews.filter((review: Review) => {
-        if (typeof review.customer_id === 'object' && review.customer_id?._id) {
+        if (typeof review.customer_id === "object" && review.customer_id?._id) {
           return review.customer_id._id === user?._id;
         }
         return review.customer_id === user?._id;
       });
-      
+
       setReviewList(customerReviews);
 
       // Fetch customer's job posts to get providers who applied
       const jobPostsRes = await jobPostService.getAll();
       const jobPosts = jobPostsRes.data || [];
-      
+
       // Extract unique providers from job applications
       const providerMap = new Map<string, Provider>();
-      
+
       jobPosts.forEach((jobPost: any) => {
         if (jobPost.applications && Array.isArray(jobPost.applications)) {
           jobPost.applications.forEach((app: any) => {
             if (app.providerId) {
-              const provider = typeof app.providerId === 'object' ? app.providerId : null;
+              const provider =
+                typeof app.providerId === "object" ? app.providerId : null;
               if (provider && provider._id) {
                 providerMap.set(provider._id, {
                   _id: provider._id,
-                  name: provider.name || 'Unknown Provider',
+                  name: provider.name || "Unknown Provider",
                   email: provider.email,
                   skills: provider.skills || [],
                 });
@@ -101,7 +104,7 @@ export default function CustomerReviewsPage() {
           });
         }
       });
-      
+
       setProviders(Array.from(providerMap.values()));
     } catch (error: any) {
       console.error("Error fetching data:", error);
@@ -129,17 +132,29 @@ export default function CustomerReviewsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this review?")) return;
+  const handleDeleteClick = (id: string) => {
+    setDeletingReviewId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingReviewId) return;
 
     try {
-      await reviewService.delete(id);
+      await reviewService.delete(deletingReviewId);
       toast.success("Review deleted");
       fetchData();
     } catch (error: any) {
       console.error("Error deleting review:", error);
-      toast.error("Failed to delete review");
+      toast.error(error.response?.data?.message || "Failed to delete review");
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setDeletingReviewId(null);
     }
+  };
+
+  const handleDelete = async (id: string) => {
+    handleDeleteClick(id);
   };
 
   if (!user || user.role !== "customer") {
@@ -164,8 +179,8 @@ export default function CustomerReviewsPage() {
             <div className="space-y-4">
               {providers.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  You can only review providers who have applied to your job posts.
-                  Post a job first to get provider applications.
+                  You can only review providers who have applied to your job
+                  posts. Post a job first to get provider applications.
                 </p>
               ) : (
                 <>
@@ -173,7 +188,9 @@ export default function CustomerReviewsPage() {
                     <label className="text-sm font-medium">Provider *</label>
                     <Select
                       value={newReview.provider_id}
-                      onValueChange={(value) => setNewReview({ ...newReview, provider_id: value })}
+                      onValueChange={(value) =>
+                        setNewReview({ ...newReview, provider_id: value })
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a provider" />
@@ -182,22 +199,29 @@ export default function CustomerReviewsPage() {
                         {providers.map((provider) => (
                           <SelectItem key={provider._id} value={provider._id}>
                             {provider.name}
-                            {provider.skills && provider.skills.length > 0 && 
-                              ` - ${provider.skills.join(", ")}`
-                            }
+                            {provider.skills &&
+                              provider.skills.length > 0 &&
+                              ` - ${provider.skills.join(", ")}`}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Rating * ({newReview.rating}/5)</label>
+                    <label className="text-sm font-medium">
+                      Rating * ({newReview.rating}/5)
+                    </label>
                     <input
                       type="range"
                       min="1"
                       max="5"
                       value={newReview.rating}
-                      onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
+                      onChange={(e) =>
+                        setNewReview({
+                          ...newReview,
+                          rating: parseInt(e.target.value),
+                        })
+                      }
                       className="w-full"
                     />
                     <div className="flex justify-between text-xs text-muted-foreground mt-1">
@@ -210,7 +234,9 @@ export default function CustomerReviewsPage() {
                     <Textarea
                       placeholder="Share your experience..."
                       value={newReview.comment}
-                      onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                      onChange={(e) =>
+                        setNewReview({ ...newReview, comment: e.target.value })
+                      }
                       rows={4}
                     />
                   </div>
@@ -218,7 +244,10 @@ export default function CustomerReviewsPage() {
               )}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsCreateDialogOpen(false)}
+              >
                 Cancel
               </Button>
               {providers.length > 0 && (
@@ -229,6 +258,29 @@ export default function CustomerReviewsPage() {
         </Dialog>
       </div>
 
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Review</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this review? This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {loading ? (
         <div className="text-center py-12">
           <p className="text-muted-foreground">Loading reviews...</p>
@@ -236,12 +288,17 @@ export default function CustomerReviewsPage() {
       ) : reviewList.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
-            <p className="text-muted-foreground mb-4">You haven't written any reviews yet</p>
+            <p className="text-muted-foreground mb-4">
+              You haven't written any reviews yet
+            </p>
             {providers.length > 0 ? (
-              <Button onClick={() => setIsCreateDialogOpen(true)}>Write Your First Review</Button>
+              <Button onClick={() => setIsCreateDialogOpen(true)}>
+                Write Your First Review
+              </Button>
             ) : (
               <p className="text-sm text-muted-foreground mt-2">
-                Post a job and wait for provider applications to be able to write reviews
+                Post a job and wait for provider applications to be able to
+                write reviews
               </p>
             )}
           </CardContent>
@@ -256,14 +313,22 @@ export default function CustomerReviewsPage() {
                     <CardTitle className="flex items-center gap-2">
                       <span>Rating: {review.rating}/5</span>
                       <span className="text-warning">
-                        {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
+                        {"★".repeat(review.rating)}
+                        {"☆".repeat(5 - review.rating)}
                       </span>
                     </CardTitle>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Provider: {typeof review.provider_id === 'object' ? review.provider_id.name : 'Provider'}
+                      Provider:{" "}
+                      {typeof review.provider_id === "object"
+                        ? review.provider_id.name
+                        : "Provider"}
                     </p>
                   </div>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(review._id)}>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(review._id)}
+                  >
                     Delete
                   </Button>
                 </div>

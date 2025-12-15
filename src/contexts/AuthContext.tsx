@@ -16,7 +16,7 @@ import { authService } from "@/services/auth.service";
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (token: string, userData: User) => Promise<void>;
+  login: (token: string, userData: User, redirectUrl?: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   refreshUser: () => Promise<void>;
@@ -92,18 +92,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (token: string, userData: User) => {
+  const login = async (token: string, userData: User, redirectUrl?: string) => {
     // Store token in cookie
     Cookies.set("token", token, { expires: 7, path: "/" }); // 7 days expiry
     Cookies.set("user", JSON.stringify(userData), { expires: 7, path: "/" });
-    
+
     // Set state immediately
     setUser(userData);
-    
+
     toast.success("Logged in successfully");
 
-    // Redirect based on role
-    if (userData.role === "admin") {
+    // Redirect based on role or to the original URL
+    if (
+      redirectUrl &&
+      redirectUrl !== "/auth/login" &&
+      !redirectUrl.startsWith("/auth/register")
+    ) {
+      router.push(redirectUrl);
+    } else if (userData.role === "admin") {
       router.push("/workbond/admin/dashboard");
     } else if (userData.role === "provider") {
       if (userData.isApproved) {
@@ -112,6 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         router.push("/provider/pending");
       }
     } else {
+      // For customers, redirect to homepage
       router.push("/");
     }
   };

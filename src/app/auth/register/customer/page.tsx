@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -50,6 +50,17 @@ type RegisterCustomerFormValues = z.infer<typeof registerCustomerSchema>;
 export default function RegisterCustomerPage() {
   const { login } = useAuth();
   const router = useRouter();
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
+
+  // Safely get redirect URL after component mounts
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirect = urlParams.get("redirect");
+      setRedirectUrl(redirect);
+    }
+  }, []);
+
   const form = useForm<RegisterCustomerFormValues>({
     resolver: zodResolver(registerCustomerSchema),
     defaultValues: {
@@ -98,9 +109,9 @@ export default function RegisterCustomerPage() {
         if (loginResult.success && loginResult.data?.user) {
           // Login function accepts token and userData
           const token = loginResult.data.token || "";
-          await login(token, loginResult.data.user);
+          await login(token, loginResult.data.user, redirectUrl || undefined);
           toast.success("Account created and logged in successfully!");
-          router.push("/customer/dashboard");
+          // The login function already handles redirection, so we don't need to do it here
         } else {
           // Registration successful but auto-login failed, redirect to login
           toast.success("Account created successfully! Please log in.");

@@ -68,14 +68,21 @@ export default function AdminSubscriptionsPage() {
       setSubList(res.data || []);
     } catch (err: any) {
       console.error("Error loading subscriptions:", err);
-      toast.error(err.response?.data?.message || "Failed to load subscriptions");
+      toast.error(
+        err.response?.data?.message || "Failed to load subscriptions"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const handleCreate = async () => {
-    if (!newSub.provider_id || !newSub.plan_name || !newSub.amount || !newSub.end_date) {
+    if (
+      !newSub.provider_id ||
+      !newSub.plan_name ||
+      !newSub.amount ||
+      !newSub.end_date
+    ) {
       toast.error("Provider, Plan Name, Amount, and End Date are required");
       return;
     }
@@ -102,7 +109,9 @@ export default function AdminSubscriptionsPage() {
         status: "Active",
       });
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to create subscription");
+      toast.error(
+        err.response?.data?.message || "Failed to create subscription"
+      );
     }
   };
 
@@ -122,10 +131,15 @@ export default function AdminSubscriptionsPage() {
           toast.success("Subscription status updated");
           setEditingId(null);
           loadSubs();
-        } catch (error) {
-          toast.error("Failed to update subscription status");
+        } catch (error: any) {
+          console.error("Error updating subscription status:", error);
+          toast.error(
+            error.response?.data?.message ||
+              "Failed to update subscription status"
+          );
+        } finally {
+          setConfirmDialog({ ...confirmDialog, open: false });
         }
-        setConfirmDialog({ ...confirmDialog, open: false });
       },
     });
   };
@@ -134,7 +148,8 @@ export default function AdminSubscriptionsPage() {
     setConfirmDialog({
       open: true,
       title: "Delete Subscription",
-      description: "Are you sure you want to delete this subscription? This action cannot be undone.",
+      description:
+        "Are you sure you want to delete this subscription? This action cannot be undone.",
       variant: "destructive",
       onConfirm: async () => {
         try {
@@ -155,20 +170,28 @@ export default function AdminSubscriptionsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-foreground">Manage Subscriptions</h1>
+      <h1 className="text-3xl font-bold text-foreground">
+        Manage Subscriptions
+      </h1>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-foreground">Create New Subscription</CardTitle>
+          <CardTitle className="text-foreground">
+            Create New Subscription
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="text-sm font-medium mb-2 block text-foreground">Provider *</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">
+                Provider *
+              </label>
               <select
                 className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
                 value={newSub.provider_id}
-                onChange={(e) => setNewSub({ ...newSub, provider_id: e.target.value })}
+                onChange={(e) =>
+                  setNewSub({ ...newSub, provider_id: e.target.value })
+                }
               >
                 <option value="">Select a provider</option>
                 {providers.map((provider) => (
@@ -179,11 +202,21 @@ export default function AdminSubscriptionsPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block text-foreground">Plan Name *</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">
+                Plan Name *
+              </label>
               <select
                 className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-input"
                 value={newSub.plan_name}
-                onChange={(e) => setNewSub({ ...newSub, plan_name: e.target.value as "Free" | "Standard" | "Premium" })}
+                onChange={(e) =>
+                  setNewSub({
+                    ...newSub,
+                    plan_name: e.target.value as
+                      | "Free"
+                      | "Standard"
+                      | "Premium",
+                  })
+                }
               >
                 <option value="Free">Free</option>
                 <option value="Standard">Standard</option>
@@ -191,23 +224,31 @@ export default function AdminSubscriptionsPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block text-foreground">Amount *</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">
+                Amount *
+              </label>
               <Input
                 type="number"
                 min="0"
                 step="0.01"
                 placeholder="0.00"
                 value={newSub.amount}
-                onChange={(e) => setNewSub({ ...newSub, amount: e.target.value })}
+                onChange={(e) =>
+                  setNewSub({ ...newSub, amount: e.target.value })
+                }
                 className="bg-background border-input text-foreground"
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block text-foreground">End Date *</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">
+                End Date *
+              </label>
               <Input
                 type="date"
                 value={newSub.end_date}
-                onChange={(e) => setNewSub({ ...newSub, end_date: e.target.value })}
+                onChange={(e) =>
+                  setNewSub({ ...newSub, end_date: e.target.value })
+                }
                 className="bg-background border-input text-foreground"
               />
             </div>
@@ -234,12 +275,16 @@ export default function AdminSubscriptionsPage() {
             <Card key={sub._id}>
               <CardHeader>
                 <CardTitle className="text-foreground">
-                  {sub.plan_name} - ${sub.amount}
+                  {sub.plan_name} - LKR{sub.amount}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Provider: {typeof sub.provider_id === "object" ? sub.provider_id.name : "N/A"}
+                  Provider:{" "}
+                  {sub.provider_id && typeof sub.provider_id === "object"
+                    ? sub.provider_id.name
+                    : providers.find((p) => p._id === sub.provider_id)?.name ||
+                      "Unknown Provider"}
                 </p>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Status:</span>
@@ -254,10 +299,17 @@ export default function AdminSubscriptionsPage() {
                         <option value="Cancelled">Cancelled</option>
                         <option value="Expired">Expired</option>
                       </select>
-                      <Button size="sm" onClick={() => handleStatusUpdate(sub._id)}>
+                      <Button
+                        size="sm"
+                        onClick={() => handleStatusUpdate(sub._id)}
+                      >
                         Save
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setEditingId(null)}
+                      >
                         Cancel
                       </Button>
                     </div>

@@ -36,8 +36,15 @@ type AdminLoginFormValues = z.infer<typeof adminLoginSchema>;
 
 export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
   const { login, user, isLoading: authLoading } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    // Parse redirect URL from window.location.search for SSR compatibility
+    const params = new URLSearchParams(window.location.search);
+    setRedirectUrl(params.get("redirect"));
+  }, []);
 
   const form = useForm<AdminLoginFormValues>({
     resolver: zodResolver(adminLoginSchema),
@@ -99,10 +106,8 @@ export default function AdminLoginPage() {
       const token = result.data.token || "";
 
       // Login and redirect
-      await login(token, result.data.user);
-
-      // Redirect to admin dashboard
-      router.push("/workbond/admin/dashboard");
+      await login(token, result.data.user, redirectUrl || undefined);
+      // The login function already handles redirection, so we don't need to do it here
     } catch (error: any) {
       // Extract error message from various possible locations
       const errorMessage =

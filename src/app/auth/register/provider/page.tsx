@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -64,6 +64,13 @@ type RegisterProviderFormValues = z.infer<typeof registerProviderSchema>;
 
 export default function RegisterProviderPage() {
   const router = useRouter();
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Parse redirect URL from window.location.search for SSR compatibility
+    const params = new URLSearchParams(window.location.search);
+    setRedirectUrl(params.get("redirect"));
+  }, []);
   const form = useForm<RegisterProviderFormValues>({
     resolver: zodResolver(registerProviderSchema),
     defaultValues: {
@@ -100,7 +107,12 @@ export default function RegisterProviderPage() {
       toast.success(
         "Registration successful! Please wait for admin approval to log in."
       );
-      router.push("/auth/login");
+      // Redirect to login page with the original URL preserved
+      const loginUrl = new URL("/auth/login", window.location.origin);
+      if (redirectUrl) {
+        loginUrl.searchParams.set("redirect", redirectUrl);
+      }
+      router.push(loginUrl.pathname + loginUrl.search);
     } catch (error: any) {
       toast.error(error.message);
     }

@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 const loginSchema = z.object({
   email: z
@@ -49,6 +50,17 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
+
+  // Safely get redirect URL after component mounts
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirect = urlParams.get("redirect");
+      setRedirectUrl(redirect);
+    }
+  }, []);
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -75,7 +87,7 @@ export default function LoginPage() {
       const token = result.data.token || "";
 
       // Login function accepts token and userData
-      await login(token, result.data.user);
+      await login(token, result.data.user, redirectUrl || undefined);
     } catch (error: any) {
       // Handle axios errors and regular errors
       const errorMessage =
@@ -92,7 +104,9 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-secondary/40 via-background to-primary/40 px-4 py-12 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md border-background bg-card text-card-foreground">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center text-foreground">Login</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center text-foreground">
+            Login
+          </CardTitle>
           <CardDescription className="text-center text-muted-foreground">
             Enter your credentials to access your account
           </CardDescription>
@@ -131,7 +145,11 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel className="text-foreground">Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="name@example.com" {...field} className="bg-background border-input text-foreground" />
+                      <Input
+                        placeholder="name@example.com"
+                        {...field}
+                        className="bg-background border-input text-foreground"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -144,7 +162,12 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel className="text-foreground">Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="******" {...field} className="bg-background border-input text-foreground" />
+                      <Input
+                        type="password"
+                        placeholder="******"
+                        {...field}
+                        className="bg-background border-input text-foreground"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -157,11 +180,14 @@ export default function LoginPage() {
           </Form>
 
           <div className="text-center text-sm lg:text-center">
-                      Don't have an account?{" "}
-                      <Link href="/auth/register/customer" className="underline hover:text-primary">
-                        Sign up
-                      </Link>
-                    </div>
+            Don't have an account?{" "}
+            <Link
+              href="/auth/register/customer"
+              className="underline hover:text-primary"
+            >
+              Sign up
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
