@@ -55,20 +55,26 @@ export default function ProviderJobPostsPage() {
   };
 
   const hasApplied = (job: JobPostType) => {
+    if (!user?._id) return false;
+
     return job.applications?.some((app) => {
-      const providerId = typeof app.providerId === 'object' && app.providerId !== null 
-        ? (app.providerId as any)._id 
-        : app.providerId;
-      return providerId === user?._id;
+      const providerId =
+        typeof app.providerId === "object" && app.providerId !== null
+          ? (app.providerId as any)._id
+          : app.providerId;
+      return providerId === user._id;
     });
   };
 
   const getApplicationStatus = (job: JobPostType) => {
+    if (!user?._id) return null;
+
     const application = job.applications?.find((app) => {
-      const providerId = typeof app.providerId === 'object' && app.providerId !== null 
-        ? (app.providerId as any)._id 
-        : app.providerId;
-      return providerId === user?._id;
+      const providerId =
+        typeof app.providerId === "object" && app.providerId !== null
+          ? (app.providerId as any)._id
+          : app.providerId;
+      return providerId === user._id;
     });
     return application?.status || null;
   };
@@ -76,7 +82,12 @@ export default function ProviderJobPostsPage() {
   const availableJobs = allJobs.filter((job) => !hasApplied(job));
   const myApplications = allJobs.filter((job) => hasApplied(job));
 
-  if (!user || user.role !== "provider") {
+  // Add loading state to prevent hydration mismatch
+  if (!user) {
+    return <div className="p-8">Loading...</div>;
+  }
+
+  if (user.role !== "provider") {
     return <div className="p-8">Access Denied</div>;
   }
 
@@ -85,9 +96,12 @@ export default function ProviderJobPostsPage() {
       <div className="p-8">
         <Card>
           <CardContent className="text-center py-12">
-            <h2 className="text-2xl font-bold mb-4 text-foreground">Account Pending Approval</h2>
+            <h2 className="text-2xl font-bold mb-4 text-foreground">
+              Account Pending Approval
+            </h2>
             <p className="text-muted-foreground">
-              Your provider account is pending admin approval. You'll be able to browse and apply to jobs once your account is approved.
+              Your provider account is pending admin approval. You'll be able to
+              browse and apply to jobs once your account is approved.
             </p>
           </CardContent>
         </Card>
@@ -101,8 +115,12 @@ export default function ProviderJobPostsPage() {
 
       <Tabs defaultValue="available" className="w-full">
         <TabsList>
-          <TabsTrigger value="available">Available Jobs ({availableJobs.length})</TabsTrigger>
-          <TabsTrigger value="my-applications">My Applications ({myApplications.length})</TabsTrigger>
+          <TabsTrigger value="available">
+            Available Jobs ({availableJobs.length})
+          </TabsTrigger>
+          <TabsTrigger value="my-applications">
+            My Applications ({myApplications.length})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="available" className="space-y-4 mt-6">
@@ -113,7 +131,9 @@ export default function ProviderJobPostsPage() {
           ) : availableJobs.length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
-                <p className="text-muted-foreground">No available jobs at the moment</p>
+                <p className="text-muted-foreground">
+                  No available jobs at the moment
+                </p>
               </CardContent>
             </Card>
           ) : (
@@ -122,21 +142,31 @@ export default function ProviderJobPostsPage() {
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-foreground">{job.title}</CardTitle>
+                      <CardTitle className="text-foreground">
+                        {job.title}
+                      </CardTitle>
                       <p className="text-sm text-muted-foreground mt-1">
-                        {typeof job.service_id === 'object' ? job.service_id.name : 'Service'} • {job.duration}
+                        {typeof job.service_id === "object" &&
+                        job.service_id !== null
+                          ? job.service_id.name
+                          : "Service"}{" "}
+                        • {job.duration}
                         {job.location && ` • ${job.location}`}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Posted by: {typeof job.customerId === 'object' ? job.customerId.name : 'Customer'}
+                        Posted by:{" "}
+                        {typeof job.customerId === "object" &&
+                        job.customerId !== null
+                          ? job.customerId.name
+                          : "Customer"}
                       </p>
                     </div>
                     <div className="flex flex-col gap-2">
                       <Button onClick={() => handleApply(job._id)}>
                         Apply Now
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => {
                           setSelectedJob(job);
                           setIsDetailsDialogOpen(true);
@@ -163,7 +193,9 @@ export default function ProviderJobPostsPage() {
           ) : myApplications.length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
-                <p className="text-muted-foreground">You haven't applied to any jobs yet</p>
+                <p className="text-muted-foreground">
+                  You haven't applied to any jobs yet
+                </p>
               </CardContent>
             </Card>
           ) : (
@@ -174,19 +206,29 @@ export default function ProviderJobPostsPage() {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="text-foreground">{job.title}</CardTitle>
+                        <CardTitle className="text-foreground">
+                          {job.title}
+                        </CardTitle>
                         <p className="text-sm text-muted-foreground mt-1">
-                          {typeof job.service_id === 'object' ? job.service_id.name : 'Service'} • {job.duration}
+                          {typeof job.service_id === "object" &&
+                          job.service_id !== null
+                            ? job.service_id.name
+                            : "Service"}{" "}
+                          • {job.duration}
                           {job.location && ` • ${job.location}`}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Posted by: {typeof job.customerId === 'object' ? job.customerId.name : 'Customer'}
+                          Posted by:{" "}
+                          {typeof job.customerId === "object" &&
+                          job.customerId !== null
+                            ? job.customerId.name
+                            : "Customer"}
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <StatusBadge status={status || "pending"} />
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => {
                             setSelectedJob(job);
@@ -213,26 +255,41 @@ export default function ProviderJobPostsPage() {
           <DialogHeader>
             <DialogTitle>Customer Details</DialogTitle>
           </DialogHeader>
-          {selectedJob && selectedJob.customerId && (
+          {selectedJob &&
+          selectedJob.customerId &&
+          typeof selectedJob.customerId === "object" &&
+          selectedJob.customerId !== null ? (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Name</label>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Name
+                </label>
                 <p className="text-foreground">
-                  {typeof selectedJob.customerId === 'object' ? selectedJob.customerId.name : 'N/A'}
+                  {selectedJob.customerId.name || "N/A"}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Email</label>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Email
+                </label>
                 <p className="text-foreground">
-                  {typeof selectedJob.customerId === 'object' ? selectedJob.customerId.email : 'N/A'}
+                  {selectedJob.customerId.email || "N/A"}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Phone</label>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Phone
+                </label>
                 <p className="text-foreground">
-                  {typeof selectedJob.customerId === 'object' ? selectedJob.customerId.phone : 'N/A'}
+                  {selectedJob.customerId.phone || "N/A"}
                 </p>
               </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-muted-foreground">
+                Customer details not available
+              </p>
             </div>
           )}
           <DialogFooter>

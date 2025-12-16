@@ -37,7 +37,8 @@ export default function AdminLayout({
   }, [user, isLoading, router, isLoginPage]);
 
   // Show loading state
-  if (isLoading) {
+  // Add a loading state to prevent hydration mismatch
+  if (typeof window === "undefined" || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-lg">Loading...</div>
