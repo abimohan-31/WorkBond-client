@@ -40,11 +40,20 @@ const registerProviderSchema = z
     email: z
       .string()
       .min(1, "email is required")
+      .regex(/^[^\s@]+@[^\s@]+\.com$/, {
+        message: "email must end with .com",
+      })
       .refine((val) => val.includes("@"), {
         message: "invalid email address",
       }),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    phone: z.string().min(10, "Phone number is required"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+      ),
+    phone: z.string().min(1, "Phone number is required").max(10, "Phone number must be 10 digits"),
     address: z.string().min(1, "Address is required"),
     experience_years: z
       .string()
