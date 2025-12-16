@@ -35,13 +35,13 @@ export default function ProviderLayout({
 
     const handleScroll = () => {
       const currentScrollY = mainElement.scrollTop;
-      
+
       if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
         setIsSidebarVisible(false);
       } else if (currentScrollY < lastScrollY.current) {
         setIsSidebarVisible(true);
       }
-      
+
       lastScrollY.current = currentScrollY;
     };
 
@@ -49,7 +49,8 @@ export default function ProviderLayout({
     return () => mainElement.removeEventListener("scroll", handleScroll);
   }, []);
 
-  if (isLoading) {
+  // Add a loading state to prevent hydration mismatch
+  if (typeof window === "undefined" || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-lg">Loading...</div>
@@ -74,10 +75,7 @@ export default function ProviderLayout({
           onClose={() => setIsSidebarOpen(false)}
         />
       </div>
-      <main
-        ref={mainRef}
-        className="flex-1 flex flex-col overflow-hidden"
-      >
+      <main ref={mainRef} className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
           <Button
             variant="ghost"

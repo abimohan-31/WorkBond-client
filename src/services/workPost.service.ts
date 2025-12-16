@@ -32,4 +32,12 @@ export const workPostService = {
     });
     return response.data;
   },
+
+  editJobPost: async (
+    id: string,
+    data: WorkPostType
+  ): Promise<ApiResponse<WorkPostType>> => {
+    const response = await apiClient.put(`/workposts/${id}`, data);
+    return response.data;
+  },
 };

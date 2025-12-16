@@ -5,14 +5,30 @@ import { useRouter } from "next/navigation";
 import { providerService } from "@/services/provider.service";
 import { WorkPostType } from "@/types/provider";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function WorkPostsPage() {
   const [workPosts, setWorkPosts] = useState<WorkPostType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [postToDelete, setPostToDelete] = useState<WorkPostType | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -23,8 +39,9 @@ export default function WorkPostsPage() {
     try {
       const response = await providerService.getWorkPosts();
       if (response.success && response.data) {
-        // Handle both array directly or nested in data property
-        const posts = Array.isArray(response.data) ? response.data : (response.data as any).workPosts || [];
+        const posts = Array.isArray(response.data)
+          ? response.data
+          : (response.data as any).workPosts || [];
         setWorkPosts(posts);
       }
     } catch (error) {
@@ -35,11 +52,11 @@ export default function WorkPostsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this post?")) return;
+  const handleDelete = async () => {
+    if (!postToDelete) return;
 
     try {
-      const response = await providerService.deleteWorkPost(id);
+      const response = await providerService.deleteWorkPost(postToDelete._id);
       if (response.success) {
         toast.success("Work post deleted successfully");
         fetchWorkPosts();
@@ -47,7 +64,15 @@ export default function WorkPostsPage() {
     } catch (error) {
       console.error("Error deleting work post:", error);
       toast.error("Failed to delete work post");
+    } finally {
+      setIsDialogOpen(false);
+      setPostToDelete(null);
     }
+  };
+
+  const openDeleteDialog = (post: WorkPostType) => {
+    setPostToDelete(post);
+    setIsDialogOpen(true);
   };
 
   if (loading) {
@@ -65,7 +90,9 @@ export default function WorkPostsPage() {
 
       {workPosts.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed rounded-lg">
-          <p className="text-muted-foreground mb-4">You haven't posted any work yet.</p>
+          <p className="text-muted-foreground mb-4">
+            You haven't posted any work yet.
+          </p>
           <Button onClick={() => router.push("/provider/work-posts/create")}>
             Start Building Your Portfolio
           </Button>
@@ -77,26 +104,32 @@ export default function WorkPostsPage() {
               <div className="relative h-48 w-full">
                 <div className="absolute inset-0 flex">
                   <div className="w-1/2 h-full relative">
-                    <img 
-                      src={post.beforeImage} 
-                      alt="Before" 
+                    <img
+                      src={post.beforeImage}
+                      alt="Before"
                       className="w-full h-full object-cover"
                     />
-                    <Badge className="absolute top-2 left-2 bg-black/70">Before</Badge>
+                    <Badge className="absolute top-2 left-2 bg-black/70">
+                      Before
+                    </Badge>
                   </div>
                   <div className="w-1/2 h-full relative">
-                    <img 
-                      src={post.afterImage} 
-                      alt="After" 
+                    <img
+                      src={post.afterImage}
+                      alt="After"
                       className="w-full h-full object-cover"
                     />
-                    <Badge className="absolute top-2 right-2 bg-green-600">After</Badge>
+                    <Badge className="absolute top-2 right-2 bg-green-600">
+                      After
+                    </Badge>
                   </div>
                 </div>
               </div>
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg truncate" title={post.title}>{post.title}</CardTitle>
+                  <CardTitle className="text-lg truncate" title={post.title}>
+                    {post.title}
+                  </CardTitle>
                   <Badge variant={post.isPublic ? "default" : "secondary"}>
                     {post.isPublic ? "Public" : "Private"}
                   </Badge>
@@ -107,10 +140,20 @@ export default function WorkPostsPage() {
                 <p className="text-sm line-clamp-2">{post.description}</p>
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={() => router.push(`/provider/work-posts/edit/${post._id}`)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    router.push(`/provider/work-posts/edit/${post._id}`)
+                  }
+                >
                   <Edit className="h-4 w-4" />
                 </Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDelete(post._id)}>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => openDeleteDialog(post)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </CardFooter>
@@ -118,6 +161,26 @@ export default function WorkPostsPage() {
           ))}
         </div>
       )}
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you sure?</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. This will permanently delete your
+              work post.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

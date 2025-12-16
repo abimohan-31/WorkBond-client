@@ -5,12 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { jobPostService } from "@/services/jobPost.service";
 import { providerService } from "@/services/provider.service";
 import { workPostService } from "@/services/workPost.service";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -61,7 +56,7 @@ export default function ProviderDashboard() {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      if (!user) return;
+      if (!user || !user._id) return;
       const [jobsRes, profileRes, reviewsRes, workPostsRes] = await Promise.all(
         [
           jobPostService.getAll(),
@@ -77,10 +72,10 @@ export default function ProviderDashboard() {
         allJobs.filter((job: JobPostType) =>
           job.applications?.some((app: any) => {
             const providerId =
-              typeof app.providerId === "object"
+              typeof app.providerId === "object" && app.providerId !== null
                 ? app.providerId._id
                 : app.providerId;
-            return providerId === user?._id && app.status === "approved";
+            return providerId === user._id && app.status === "approved";
           })
         ) || [];
 
@@ -88,10 +83,10 @@ export default function ProviderDashboard() {
         allJobs.filter((job: JobPostType) =>
           job.applications?.some((app: any) => {
             const providerId =
-              typeof app.providerId === "object"
+              typeof app.providerId === "object" && app.providerId !== null
                 ? app.providerId._id
                 : app.providerId;
-            return providerId === user?._id && app.status === "rejected";
+            return providerId === user._id && app.status === "rejected";
           })
         ) || [];
 
@@ -126,16 +121,17 @@ export default function ProviderDashboard() {
   const fetchActiveJobPosts = async () => {
     try {
       setJobsLoading(true);
+      if (!user || !user._id) return;
       const res = await jobPostService.getAll();
       const jobs = res.data || [];
       const myApprovedJobs =
         jobs.filter((job: JobPostType) =>
           job.applications?.some((app: any) => {
             const providerId =
-              typeof app.providerId === "object"
+              typeof app.providerId === "object" && app.providerId !== null
                 ? app.providerId._id
                 : app.providerId;
-            return providerId === user?._id && app.status === "approved";
+            return providerId === user._id && app.status === "approved";
           })
         ) || [];
       setActiveJobPosts(
@@ -153,7 +149,12 @@ export default function ProviderDashboard() {
     }
   };
 
-  if (!user || user.role !== "provider") {
+  // Add loading state to prevent hydration mismatch
+  if (!user) {
+    return <div className="p-8">Loading...</div>;
+  }
+
+  if (user.role !== "provider") {
     return <div className="p-8">Access Denied</div>;
   }
 

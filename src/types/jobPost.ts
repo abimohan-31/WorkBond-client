@@ -36,4 +36,3 @@ export interface UpdateJobPostData {
   location?: string;
   jobStatus?: "open" | "in_progress" | "completed" | "cancelled";
 }
-

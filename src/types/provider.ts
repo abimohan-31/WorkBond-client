@@ -5,7 +5,16 @@ export interface WorkPostType {
   beforeImage: string;
   afterImage: string;
   category: string;
-  providerId: string | { _id: string; name: string; email: string; skills: string[]; rating: number; profileImage?: string };
+  providerId:
+    | string
+    | {
+        _id: string;
+        name: string;
+        email: string;
+        skills: string[];
+        rating: number;
+        profileImage?: string;
+      };
   jobPostId?: string | { _id: string; title: string; description: string };
   service_id?: string | { _id: string; name: string; category: string };
   customerId?: string | { _id: string; name: string; email: string };
@@ -68,3 +77,9 @@ export interface UpdateProviderData {
   isActive?: boolean;
 }
 
+export interface UpdateWorkPostData {
+  title?: string;
+  description?: string;
+  category?: string;
+  isPublic?: boolean;
+}
