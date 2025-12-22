@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Plus } from "lucide-react";
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
@@ -74,6 +75,13 @@ export default function CustomerDashboard() {
         </div>
       </div>
 
+      <div className="mb-8 p-6 bg-muted/30 rounded-lg border border-dashed text-center">
+        <p className="text-muted-foreground">
+          Need help? Post a job to get offers from expert providers in minutes.
+          Simply click the <strong>plus (+)</strong> button or heading to start.
+        </p>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
         <Card>
           <CardHeader>
@@ -106,6 +114,17 @@ export default function CustomerDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <Link href="/customer/job-posts">
+        <Button
+          size="icon"
+          className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg hover:scale-110 transition-transform"
+          title="Post a Job"
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
+      </Link>
     </>
+
   );
 }

@@ -6,11 +6,15 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import CloudinaryImageUpload from "@/components/CloudinaryImageUpload";
+import { ChangePasswordModal } from "@/components/modals/ChangePasswordModal";
+
 
 export default function CustomerProfilePage() {
   const { user, refreshUser } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
 
   useEffect(() => {
     if (user?.role === "customer") loadProfile();
@@ -86,10 +90,19 @@ export default function CustomerProfilePage() {
                     <Button onClick={handleUpdate}>Save Changes</Button>
                 </>
             ) : (
-                <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
+                <>
+                    <Button variant="outline" onClick={() => setIsPasswordModalOpen(true)}>Change Password</Button>
+                    <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
+                </>
             )}
         </div>
       </div>
+      
+      <ChangePasswordModal 
+        isOpen={isPasswordModalOpen} 
+        onClose={() => setIsPasswordModalOpen(false)} 
+      />
     </div>
+
   );
 }

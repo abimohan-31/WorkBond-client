@@ -17,6 +17,7 @@ import { ProviderDetailsModal } from "@/components/modals/ProviderDetailsModal";
 import { PriceList, Service } from "@/types/workPost";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 
 interface ProviderInfo {
   _id: string;
@@ -479,6 +480,19 @@ export default function Home() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
       />
+
+      {isCustomer && (
+        <Link href="/customer/job-posts">
+          <Button
+            size="icon"
+            className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg hover:scale-110 transition-transform z-50"
+            title="Post a Job"
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        </Link>
+      )}
     </main>
+
   );
 }

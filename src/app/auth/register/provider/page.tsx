@@ -33,18 +33,18 @@ const registerProviderSchema = z
   .object({
     name: z
       .string()
-      .min(1, "name is required")
+      .min(1, "Name is required")
       .refine((val) => val.trim().length >= 3, {
-        message: "name must be at least 3 letters",
+        message: "Name must be at least 3 letters",
       }),
     email: z
       .string()
-      .min(1, "email is required")
+      .min(1, "Email is required")
       .regex(/^[^\s@]+@[^\s@]+\.com$/, {
-        message: "email must end with .com",
+        message: "Email must end with .com",
       })
       .refine((val) => val.includes("@"), {
-        message: "invalid email address",
+        message: "Invalid email address",
       }),
     password: z
       .string()
@@ -54,10 +54,11 @@ const registerProviderSchema = z
         "Password must contain at least one uppercase letter, one lowercase letter, and one number"
       ),
     phone: z.string().min(1, "Phone number is required").max(10, "Phone number must be 10 digits"),
-    address: z.string().min(1, "Address is required"),
+    district: z.string().min(1, "District is required"),
+    fullAddress: z.string().min(1, "Full address is required"),
     experience_years: z
       .string()
-      .min(1, "experience year is required")
+      .min(1, "Experience year is required")
       .refine((val) => !isNaN(Number(val)) && Number(val) >= 1, {
         message: "Experience must be a positive number",
       }),
@@ -87,7 +88,8 @@ export default function RegisterProviderPage() {
       email: "",
       password: "",
       phone: "",
-      address: "",
+      district: "",
+      fullAddress: "",
       experience_years: "",
       skills: [],
       confirmPassword: "",
@@ -102,6 +104,7 @@ export default function RegisterProviderPage() {
     try {
       const result = await authService.register({
         ...data,
+        address: data.district,
         experience_years: Number(data.experience_years),
         role: "provider",
         skills: data.skills,
@@ -223,10 +226,10 @@ export default function RegisterProviderPage() {
               />
               <FormField
                 control={form.control}
-                name="address"
+                name="district"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Address</FormLabel>
+                    <FormLabel>District</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -251,6 +254,21 @@ export default function RegisterProviderPage() {
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="fullAddress"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Address</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your full street address" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
 
               <div className="space-y-2">
                 <FormLabel>Skills</FormLabel>

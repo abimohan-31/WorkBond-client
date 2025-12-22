@@ -82,4 +82,9 @@ export const providerService = {
     const response = await apiClient.get(`/providers/public/${id}`);
     return response.data;
   },
+ 
+  getAllProviders: async (params?: any): Promise<ApiResponse<any>> => {
+    const response = await apiClient.get("/providers/public", { params });
+    return response.data;
+  },
 };
