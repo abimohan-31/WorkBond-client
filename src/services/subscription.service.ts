@@ -33,7 +33,7 @@ export const subscriptionService = {
     return response.data;
   },
 
-  createProviderSubscription: async (
+  subscribeUser: async (
     planName: string,
     amount: number
   ): Promise<ApiResponse<SubscriptionType>> => {
@@ -41,7 +41,7 @@ export const subscriptionService = {
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + 1);
 
-    const response = await apiClient.post("/subscriptions/provider/subscribe", {
+    const response = await apiClient.post("/subscriptions/subscribe", {
       plan_name: planName,
       start_date: startDate.toISOString(),
       end_date: endDate.toISOString(),

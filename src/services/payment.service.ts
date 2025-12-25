@@ -9,7 +9,7 @@ export const paymentService = {
   },
 
   getSubscriptionStatus: async (): Promise<ApiResponse<SubscriptionStatusResponse>> => {
-    const response = await apiClient.get("/payments/provider-subscription");
+    const response = await apiClient.get("/payments/user-subscription");
     return response.data;
   },
 };

@@ -8,40 +8,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { Check, Loader2, Sparkles, Shield, User, CreditCard } from "lucide-react";
+import { Check, Loader2, Sparkles, Shield, User } from "lucide-react";
 
-const PROVIDER_PLANS = [
+const CUSTOMER_PLANS = [
   {
-    name: "Standard",
-    price: 1200,
-    features: [
-      "First month FREE",
-      "Post unlimited work showcases",
-      "Apply to customer job posts",
-      "Basic profile visibility",
-      "Email support",
-    ],
+    name: "Individual",
+    price: 1000.00,
+    features: ["Post up to 5 jobs", "Standard support", "1-month validity"],
   },
   {
-    name: "Premium",
-    price: 1800,
-    recommended: true,
-    features: [
-      "First month FREE",
-      "All Standard features",
-      "Featured profile placement",
-      "Priority job notifications",
-      "Advanced analytics",
-      "Priority support",
-    ],
-  },
+    name: "Business",
+    price: 1500.00,
+    features: ["Unlimited job posts", "Priority support", "Featured listings", "3-month validity"],
+  }
 ];
 
-export default function ProviderSubscriptionsPage() {
+export default function CustomerSubscriptionsPage() {
   const { user } = useAuth();
   const [status, setStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     loadStatus();
@@ -62,19 +48,10 @@ export default function ProviderSubscriptionsPage() {
 
   const handleSubscribe = async (plan: any) => {
     try {
-      setSubmitting(plan.name);
-      // For providers, if it's first month free, we might send 0, 
-      // but to match customer UI flow exactly (which redirects to checkout), 
-      // we'll follow the same logic. If the amount is 0, backend handles it.
+      setSubmitting(true);
       const res = await subscriptionService.subscribeUser(plan.name, plan.price);
       
       if (res.success && res.data?._id) {
-        if (plan.price === 0) {
-          toast.success("Free subscription activated!");
-          loadStatus();
-          return;
-        }
-
         toast.info("Redirecting to checkout...");
         const paymentRes = await paymentService.createSubscriptionPayment(res.data._id);
         if (paymentRes.success && paymentRes.data?.url) {
@@ -84,7 +61,7 @@ export default function ProviderSubscriptionsPage() {
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to initiate subscription");
     } finally {
-      setSubmitting(null);
+      setSubmitting(false);
     }
   };
 
@@ -105,7 +82,7 @@ export default function ProviderSubscriptionsPage() {
     <div className="max-w-6xl mx-auto space-y-8">
       <div className="text-center space-y-2">
         <h1 className="text-4xl font-extrabold tracking-tight">Subscription Plans</h1>
-        <p className="text-lg text-muted-foreground">Choose a plan to grow your business and reach more customers</p>
+        <p className="text-lg text-muted-foreground">Choose a plan that works best for your needs</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-8 items-start">
@@ -154,7 +131,7 @@ export default function ProviderSubscriptionsPage() {
               <div className="p-4 bg-amber-500/5 border border-amber-500/10 rounded-lg text-center py-8">
                 <p className="text-amber-600 font-medium">No Active Paid Subscription</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {!isTrialActive ? 'Your trial has expired. Subscribe to continue applying for jobs.' : 'Subscribe now to ensure uninterrupted service after trial.'}
+                  {!isTrialActive ? 'Your trial has expired. Subscribe to continue posting jobs.' : 'Subscribe now to ensure uninterrupted service after trial.'}
                 </p>
               </div>
             )}
@@ -162,16 +139,14 @@ export default function ProviderSubscriptionsPage() {
         </Card>
 
         <div className="space-y-6">
-          {PROVIDER_PLANS.map((plan) => (
-            <Card key={plan.name} className={`hover:border-primary/40 transition-all duration-300 ${plan.recommended ? 'border-primary/60 bg-primary/5' : ''}`}>
+          {CUSTOMER_PLANS.map((plan) => (
+            <Card key={plan.name} className="hover:border-primary/40 transition-all duration-300">
               <CardHeader>
                 <div className="flex justify-between items-center mb-2">
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
                   <div className="text-2xl font-bold text-primary">LKR {plan.price.toFixed(2)}</div>
                 </div>
-                <CardDescription>
-                  {plan.name === 'Standard' ? 'Great for individual providers' : 'Best for professional teams'}
-                </CardDescription>
+                <CardDescription>Perfect for {plan.name === 'Individual' ? 'occasional job posts' : 'regular hiring needs'}.</CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
@@ -187,10 +162,10 @@ export default function ProviderSubscriptionsPage() {
                 <Button 
                   className="w-full h-12 text-lg font-bold" 
                   onClick={() => handleSubscribe(plan)}
-                  disabled={submitting !== null || (activeSub && activeSub.plan_name === plan.name)}
+                  disabled={submitting}
                 >
-                  {submitting === plan.name && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {activeSub && activeSub.plan_name === plan.name ? 'Current Plan' : `Select ${plan.name} Plan`}
+                  {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Select {plan.name} Plan
                 </Button>
               </CardFooter>
             </Card>

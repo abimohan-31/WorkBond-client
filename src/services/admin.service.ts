@@ -106,4 +106,8 @@ export const adminService = {
     const response = await apiClient.put(`/subscriptions/${id}`, { status });
     return response.data;
   },
+  getSubscriptionsSummary: async (): Promise<ApiResponse<any[]>> => {
+    const response = await apiClient.get("/subscriptions/admin-summary");
+    return response.data;
+  },
 };

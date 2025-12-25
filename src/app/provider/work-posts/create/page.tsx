@@ -37,11 +37,11 @@ export default function CreateWorkPostPage() {
       const { paymentService } = await import("@/services/payment.service");
       const response = await paymentService.getSubscriptionStatus();
       
-      if (response.success && response.data?.activeSubscription) {
+      if (response.success && (response.data?.activeSubscription || response.data?.isTrialActive)) {
         setHasActiveSubscription(true);
       } else {
         setHasActiveSubscription(false);
-        toast.error("You need an active subscription to create work posts");
+        toast.error("You need an active subscription or a valid trial to create work posts");
         setTimeout(() => {
           router.push("/provider/subscriptions");
         }, 2000);

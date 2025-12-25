@@ -26,4 +26,6 @@ export interface SubscriptionStatusResponse {
     paymentStatus: string;
   } | null;
   allSubscriptions: any[];
+  isTrialActive: boolean;
+  trialExpiresAt: string;
 }
